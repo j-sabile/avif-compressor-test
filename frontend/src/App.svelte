@@ -4,8 +4,10 @@
   let quality = "40";
   let effort = "6";
   let resolution = "1080";
+  let isCompressing = false;
 
-  const handleUpload = async () => {
+  const handleCompress = async () => {
+    isCompressing = true;
     const formData = new FormData();
     formData.append("quality", quality);
     formData.append("effort", effort);
@@ -18,6 +20,7 @@
     });
     await res.json();
     alert("Success!");
+    isCompressing = false;
   };
 
   const handleDragOver = (e) => e.preventDefault();
@@ -48,8 +51,10 @@
       >
         Drag images here...
       </div>
-      <button on:click={handleUpload} class="bg-neutral-900 rounded-lg shadow px-5 py-2 m-4 hover:brightness-90"
-        >Upload</button
+      <button
+        on:click={handleCompress}
+        class={`bg-neutral-900 rounded-lg shadow px-5 py-2 m-4  ${isCompressing ? "brightness-75" : "hover:brightness-90"}`}
+        disabled={isCompressing}>{isCompressing ? `Compressing...` : "Compress"}</button
       >
     </section>
 
@@ -77,6 +82,10 @@
 </div>
 
 <style>
+  button:disabled {
+    cursor: not-allowed;
+  }
+
   .drop-area {
     border: 2px dashed gray;
     border-radius: 0.5rem;
