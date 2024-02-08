@@ -9,6 +9,7 @@
     const formData = new FormData();
     formData.append("quality", quality);
     formData.append("effort", effort);
+    formData.append("resolution", resolution);
     images.forEach((img) => formData.append("img", img));
 
     const res = await fetch("http://localhost:3000/image", {

@@ -14,12 +14,16 @@ app.get("/", (req, res) => res.send("HELLO WORLD"));
 
 app.post("/image", upload.array("img"), async (req, res) => {
   const images = req.files;
-  const { quality, effort } = req.body;
+  const quality = parseInt(req.body.quality);
+  const effort = parseInt(req.body.effort);
+  const resolution = parseInt(req.body.resolution);
 
   const promises = images.map(async (img) => {
     await sharp(img.buffer)
-      .resize(360, 360, { fit: "outside" })
-      .avif({ effort: parseInt(effort), quality: parseInt(quality) })
+      .resize(resolution, resolution, { fit: "outside", withoutEnlargement: true })
+      .avif({ effort, quality })
+      .keepExif()
+      .keepIccProfile()
       .toFile(`../Compressed Images/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
   });
 
