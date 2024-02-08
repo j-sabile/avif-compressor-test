@@ -12,12 +12,17 @@ const upload = multer();
 
 app.get("/", (req, res) => res.send("HELLO WORLD"));
 
-app.post("/image", upload.single("img"), async (req, res) => {
-  const image = req.file.buffer;
-  await sharp(image)
-    .resize(360, 360, { fit: "outside" })
-    .avif({ effort: 0 })
-    .toFile("test.avif");
+app.post("/image", upload.array("img"), async (req, res) => {
+  const images = req.files;
+
+  const promises = images.map(async (img) => {
+    await sharp(img.buffer)
+      .resize(360, 360, { fit: "outside" })
+      .avif({ effort: 4 })
+      .toFile(`../Compressed Images/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
+  });
+
+  await Promise.all(promises);
   res.status(200).json({ message: "Success" });
 });
 
