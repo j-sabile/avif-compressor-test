@@ -87,11 +87,12 @@
         </ul>
       </section>
 
+      <!-- SETTINGS SECTION -->
       <section class="flex flex-col gap-2">
         <Slider title="Quality" min="1" max="100" bind:value={quality} />
         <Slider title="Effort" min="0" max="9" bind:value={effort} />
         <Slider title="Resolution" min="144" max="3456" bind:value={resolution} />
-      </section>
+      </section>  
     </main>
   </div>
 {/if}
