@@ -16,7 +16,7 @@
     formData.append("resolution", resolution);
     images.forEach((img) => formData.append("img", img));
 
-    const res = await fetch("http://localhost:3000/image", {
+    const res = await fetch(`http://${import.meta.env.VITE_API}/image`, {
       method: "POST",
       body: formData,
     });
