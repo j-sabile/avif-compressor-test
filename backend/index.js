@@ -11,7 +11,6 @@ import dotenv from "dotenv";
 
 dotenv.config()
 const ORIGIN = process.env.ORIGIN;
-console.log(ORIGIN)
 
 const app = express();
 
@@ -38,7 +37,6 @@ app.post("/image", upload.array("img"), async (req, res) => {
       .keepExif()
       .keepIccProfile()
       .toFile(`./compressed/${socketId}/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
-    // .toFile(`../Compressed Images/${socketId}/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
     io.to(socketId).emit("compressed", img.originalname);
   });
 
@@ -48,16 +46,14 @@ app.post("/image", upload.array("img"), async (req, res) => {
 
 app.post("/download", (req, res) => {
   const socketId = req.body.socketId;
-  console.log(socketId);
   const output = fs.createWriteStream(`./compressed/${socketId}.zip`);
   const archive = archiver("zip", { zlib: { level: 2 } });
 
   output.on("close", () => {
-    console.log("Compression complete. Archive size:", archive.pointer());
+    console.log(`Compression complete ${socketId}. Archive size: ${(archive.pointer()/1024**2).toFixed(2)}MB`, );
     res.setHeader("Content-Disposition", `attachment; filename=${socketId}.zip`);
-    res.setHeader("Content-Type", "application/zip"); // Adjust for your file type
-
-    res.download(`./compressed/${socketId}.zip`); // Offer the archive for download
+    res.setHeader("Content-Type", "application/zip");
+    res.download(`./compressed/${socketId}.zip`);
 
     rimraf(`./compressed/${socketId}.zip`);
     rimraf(`./compressed/${socketId}`);
@@ -68,7 +64,7 @@ app.post("/download", (req, res) => {
   });
 
   archive.pipe(output);
-  archive.directory(`./compressed/${socketId}/`, false); // Compress 'myFiles' folder
+  archive.directory(`./compressed/${socketId}/`, false);
   archive.finalize();
 });
 

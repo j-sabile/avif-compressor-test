@@ -10,7 +10,7 @@
   let isCompressing = false;
   let isSingleCompress = false;
   let connected = false;
-  let canDownload = true;
+  let canDownload = false;
 
   const socket = io(import.meta.env.VITE_API);
   socket.on("compressed", (t) => console.log(t + " received"));
@@ -33,6 +33,20 @@
     if (res.status == 200) canDownload = true;
     alert("Success!");
     isCompressing = false;
+  };
+
+  const handleAddImage = (e) => {
+    e.preventDefault();
+
+    const fileList = e.target.files;
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const extension = file.name.split(".").pop().toLowerCase();
+
+      if (["jpg", "webp", "jpeg", "png"].includes(extension)) {
+        images = [...images, file];
+      }
+    }
   };
 
   const handleDragOver = (e) => e.preventDefault();
@@ -58,17 +72,14 @@
     })
       .then((response) => response.blob())
       .then((blob) => {
-        // Create a temporary URL representing the blob
         const url = URL.createObjectURL(blob);
 
-        // Create a link and trigger the download
         const link = document.createElement("a");
         link.href = url;
         link.setAttribute("download", "photos.zip"); // File name
         document.body.appendChild(link);
         link.click();
 
-        // Clean up
         URL.revokeObjectURL(url);
       })
       .catch((error) => console.error("Download error:", error));
@@ -81,10 +92,11 @@
   <div class="flex justify-center items-center min-h-[100dvh] p-2">
     <main class="flex flex-row flex-wrap justify-center gap-10 my-auto">
       <!-- UPLOAD SECTION -->
-      <section class="flex flex-col justify-center items-center gap-6 max-w-[250px] max-h-[300px] my-auto">
+      <section class="flex flex-col justify-center items-center gap-6 max-w-[250px] max-h-[350px] my-auto">
         <div class="drop-area w-full h-[100px] sm:h-[200px]" on:dragover={handleDragOver} on:drop={handleDrop} role="application">
           Drag images here...
         </div>
+        <input type="file" multiple on:change={handleAddImage} />
         <div class="flex flex-col justify-center items-center gap-2">
           <button
             on:click={handleCompress}
