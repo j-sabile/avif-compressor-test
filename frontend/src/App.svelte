@@ -49,6 +49,30 @@
       }
     }
   };
+
+  const handleDownload = async () => {
+    fetch(`${import.meta.env.VITE_API}/download`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ socketId: socket.id }),
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        // Create a temporary URL representing the blob
+        const url = URL.createObjectURL(blob);
+
+        // Create a link and trigger the download
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "photos.zip"); // File name
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up
+        URL.revokeObjectURL(url);
+      })
+      .catch((error) => console.error("Download error:", error));
+  };
 </script>
 
 {#if isSingleCompress}
@@ -78,8 +102,8 @@
       </section>
 
       <!-- IMAGES LIST SECTION -->
-      <section class="flex flex-col gap-2 justify-between items-center h-full w-[300px] max-h-[250px]">
-        <div class="flex flex-col gap-2 justify-center items-center w-full">
+      <section class="flex flex-col gap-4 justify-between items-center w-[300px] h-[250px]">
+        <div class="flex flex-col gap-2 h-full justify-start items-center w-full">
           <h3 class="text-center text-lg font-semibold">Images</h3>
           <ul class="flex flex-col gap-2 w-full overflow-auto scroll pe-2">
             {#each images as image, index}
@@ -94,11 +118,12 @@
         </div>
         {#if canDownload}
           <button
-            on:click={() => (isSingleCompress = true)}
+            on:click={handleDownload}
             class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`}
-            disabled={images.length === 0}>Download</button
+            >Download</button
           >
         {/if}
+        <!-- disabled={images.length === 0} -->
       </section>
 
       <!-- SETTINGS SECTION -->

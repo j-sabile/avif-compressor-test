@@ -2,10 +2,16 @@ import express from "express";
 import cors from "cors";
 import multer from "multer";
 import sharp from "sharp";
+import fs from "fs";
 import { Server } from "socket.io";
 import { createServer } from "http";
+import archiver from "archiver";
+import { rimraf } from "rimraf";
+import dotenv from "dotenv";
 
-const ORIGIN = "http://localhost:5173";
+dotenv.config()
+const ORIGIN = process.env.ORIGIN;
+console.log(ORIGIN)
 
 const app = express();
 
@@ -23,13 +29,16 @@ app.post("/image", upload.array("img"), async (req, res) => {
   const resolution = parseInt(req.body.resolution);
   const socketId = req.body.socketId;
 
+  fs.mkdirSync(`compressed/${socketId}`);
+
   const promises = images.map(async (img) => {
     await sharp(img.buffer)
       .resize(resolution, resolution, { fit: "outside", withoutEnlargement: true })
       .avif({ effort, quality })
       .keepExif()
       .keepIccProfile()
-      .toFile(`../Compressed Images/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
+      .toFile(`./compressed/${socketId}/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
+    // .toFile(`../Compressed Images/${socketId}/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
     io.to(socketId).emit("compressed", img.originalname);
   });
 
@@ -37,7 +46,31 @@ app.post("/image", upload.array("img"), async (req, res) => {
   res.status(200).json({ message: "Success" });
 });
 
-app.post("/download", (req, res) => {});
+app.post("/download", (req, res) => {
+  const socketId = req.body.socketId;
+  console.log(socketId);
+  const output = fs.createWriteStream(`./compressed/${socketId}.zip`);
+  const archive = archiver("zip", { zlib: { level: 2 } });
+
+  output.on("close", () => {
+    console.log("Compression complete. Archive size:", archive.pointer());
+    res.setHeader("Content-Disposition", `attachment; filename=${socketId}.zip`);
+    res.setHeader("Content-Type", "application/zip"); // Adjust for your file type
+
+    res.download(`./compressed/${socketId}.zip`); // Offer the archive for download
+
+    rimraf(`./compressed/${socketId}.zip`);
+    rimraf(`./compressed/${socketId}`);
+  });
+
+  archive.on("error", (err) => {
+    res.status(500).send({ error: err.message });
+  });
+
+  archive.pipe(output);
+  archive.directory(`./compressed/${socketId}/`, false); // Compress 'myFiles' folder
+  archive.finalize();
+});
 
 // SOCKET.IO
 const users = new Set();
