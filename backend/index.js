@@ -84,6 +84,9 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     users.delete(String(socket.id));
     console.log(`${socket.id} disconnected`);
+    
+    rimraf(`./compressed/${socket.id}.zip`);
+    rimraf(`./compressed/${socket.id}`);
   });
 });
 
