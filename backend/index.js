@@ -11,17 +11,18 @@ import dotenv from "dotenv";
 
 dotenv.config()
 const ORIGIN = process.env.ORIGIN;
-
+console.log(ORIGIN);
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors({ origin: ORIGIN }));
+app.use(cors({origin: ORIGIN}));
 
 const upload = multer();
 app.get("/", (req, res) => res.send("HELLO WORLD"));
 
 app.post("/image", upload.array("img"), async (req, res) => {
+  console.log("/image");
   const images = req.files;
   const quality = parseInt(req.body.quality);
   const effort = parseInt(req.body.effort);
@@ -37,10 +38,11 @@ app.post("/image", upload.array("img"), async (req, res) => {
       .keepExif()
       .keepIccProfile()
       .toFile(`./compressed/${socketId}/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
-    io.to(socketId).emit("compressed", img.originalname);
+    //io.to(socketId).emit("compressed", img.originalname);
   });
-
+  console.log("done mapping");
   await Promise.all(promises);
+  console.log("done compressing");
   res.status(200).json({ message: "Success" });
 });
 
@@ -69,22 +71,22 @@ app.post("/download", (req, res) => {
 });
 
 // SOCKET.IO
-const users = new Set();
-const server = createServer(app);
-const io = new Server(server, { cors: { origin: ORIGIN } });
+//const users = new Set();
+//const server = createServer(app);
+//const io = new Server(server, { cors: { origin: ORIGIN } });
 
-io.on("connection", (socket) => {
-  console.log(`${socket.id} connected`);
-  users.add(String(socket.id));
+//io.on("connection", (socket) => {
+//  console.log(`${socket.id} connected`);
+//  users.add(String(socket.id));
 
-  socket.on("disconnect", () => {
-    users.delete(String(socket.id));
-    console.log(`${socket.id} disconnected`);
+//  socket.on("disconnect", () => {
+//    users.delete(String(socket.id));
+//    console.log(`${socket.id} disconnected`);
     
-    rimraf(`./compressed/${socket.id}.zip`);
-    rimraf(`./compressed/${socket.id}`);
-  });
-});
+//    rimraf(`./compressed/${socket.id}.zip`);
+//    rimraf(`./compressed/${socket.id}`);
+//  });
+//});
 
 const PORT = 3000;
-server.listen(PORT, () => console.log(`Listening to port ${PORT}`));
+app.listen(PORT, () => console.log(`Listening to port ${PORT}`));
