@@ -12,10 +12,12 @@
   let connected = true;
   let canDownload = true;
 
-  //const socket = io(import.meta.env.VITE_API);
-  //socket.on("compressed", (t) => console.log(t + " received"));
+  // const socket = io(import.meta.env.VITE_API);
+  // socket.on("compressed", (t) => console.log(t + " received"));
 
-  //socket.on("connect", () => (connected = true));
+  // socket.on("connect", () => (connected = true));
+  // alert(window.location.href);
+  alert(`http://${window.location.hostname}:3000/image`);
 
   const handleCompress = async () => {
     isCompressing = true;
@@ -26,7 +28,7 @@
     formData.append("socketId", "socket");
     images.forEach((img) => formData.append("img", img));
 
-    const res = await fetch(`${import.meta.env.VITE_API}/image`, {
+    const res = await fetch(`http://${window.location.hostname}:3000/image`, {
       method: "POST",
       body: formData,
     });
