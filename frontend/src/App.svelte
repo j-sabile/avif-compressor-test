@@ -67,7 +67,7 @@
   };
 
   const handleDownload = async () => {
-    fetch(`${import.meta.env.VITE_API}/download`, {
+    fetch(`http://${window.location.hostname}:3000/download`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ socketId: "socket" }),
