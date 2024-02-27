@@ -28,7 +28,7 @@ app.post("/image", upload.array("img"), async (req, res) => {
   const resolution = parseInt(req.body.resolution);
   const socketId = req.body.socketId;
 
-  fs.mkdirSync(`compressed/${socketId}`);
+  // fs.mkdirSync(`compressed/${socketId}`);
 
   const promises = images.map(async (img) => {
     await sharp(img.buffer)
@@ -36,7 +36,7 @@ app.post("/image", upload.array("img"), async (req, res) => {
       .avif({ effort, quality })
       .keepExif()
       .keepIccProfile()
-      .toFile(`./compressed/${socketId}/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
+      .toFile(`../Compressed Images/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`);
     io.to(socketId).emit("compressed", img.originalname);
   });
 

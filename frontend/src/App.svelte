@@ -9,13 +9,12 @@
   let resolution = "1080";
   let isCompressing = false;
   let isSingleCompress = false;
-  let connected = false;
+  let connected = true;
   let canDownload = false;
 
-  const socket = io(import.meta.env.VITE_API);
-  socket.on("compressed", (t) => console.log(t + " received"));
-
-  socket.on("connect", () => (connected = true));
+  // const socket = io(import.meta.env.VITE_API);
+  // socket.on("compressed", (t) => console.log(t + " received"));
+  // socket.on("connect", () => (connected = true));
 
   const handleCompress = async () => {
     isCompressing = true;
@@ -23,7 +22,7 @@
     formData.append("quality", quality);
     formData.append("effort", effort);
     formData.append("resolution", resolution);
-    formData.append("socketId", socket.id);
+    // formData.append("socketId", socket.id);
     images.forEach((img) => formData.append("img", img));
 
     const res = await fetch(`${import.meta.env.VITE_API}/image`, {
@@ -68,7 +67,7 @@
     fetch(`${import.meta.env.VITE_API}/download`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ socketId: socket.id }),
+      // body: JSON.stringify({ socketId: socket.id }),
     })
       .then((response) => response.blob())
       .then((blob) => {
