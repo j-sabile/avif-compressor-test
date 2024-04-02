@@ -23,10 +23,13 @@
     formData.append("effort", "1");
     formData.append("img", images[currImg]);
     let id = queue.length;
-    queue = [...queue, { fileName: images[currImg].name.replace("_Hyper","").replace("IMG_","").split(".")[0], isProcessing: true }];
-    fetch("http://localhost:3000/image", { method: "POST", body: formData }).then((res) => {
+    queue = [...queue, { fileName: images[currImg].name.replace("_Hyper", "").replace("IMG_", "").split(".")[0], isProcessing: true }];
+    fetch("http://localhost:3000/image", { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {
         queue[id].isProcessing = false;
+        const data = (await res.json()).results[0];
+        queue[id].originalSize = data.originalSize;
+        queue[id].newSize = data.newSize;
       }
     });
     inputPreset = "";
@@ -58,8 +61,13 @@
     <div class="flex flex-col gap-1">
       {#each queue as item}
         <div class="flex flex-row justify-between items-center bg-neutral-700 rounded shadow px-2 py-1">
-          <div>
-            {item.fileName.length > 14 ? item.fileName.slice(0, 8) + "..." + item.fileName.slice(item.fileName.length - 6) : item.fileName}
+          <div class="flex flex-col">
+            <h6>
+              {item.fileName.length > 15 ? item.fileName.slice(0, 8) + "..." + item.fileName.slice(item.fileName.length - 6) : item.fileName}
+            </h6>
+            <p>
+              {`${item.newSize? (item.originalSize/1024**2).toFixed(2)+"MB - "+(item.newSize/1024**2).toFixed(2)+"MB":"..."}`}
+            </p>
           </div>
           {#if item.isProcessing}
             <Spinner />
