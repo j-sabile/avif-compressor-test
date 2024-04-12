@@ -1,4 +1,7 @@
 import fs from "fs";
+import {exec} from "child_process";
+
+
 
 function alterFileContent(filename, offset, newValue) {
   if (offset < 0) {

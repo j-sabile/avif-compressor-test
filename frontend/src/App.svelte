@@ -3,6 +3,8 @@
 
   import Slider from "./components/Slider.svelte";
   import SingleCompress from "./components/SingleCompress.svelte";
+  import Modal from "./components/Modal.svelte";
+
   let images = [];
   let quality = "40";
   let effort = "6";
@@ -11,6 +13,7 @@
   let isSingleCompress = false;
   let connected = true;
   let canDownload = false;
+  let showModal = false;
 
   // const socket = io(import.meta.env.VITE_API);
   // socket.on("compressed", (t) => console.log(t + " received"));
@@ -42,7 +45,7 @@
       const file = fileList[i];
       const extension = file.name.split(".").pop().toLowerCase();
 
-      if (["jpg", "webp", "jpeg", "png"].includes(extension)) {
+      if (["jpg", "webp", "jpeg", "png", "avif"].includes(extension)) {
         images = [...images, file];
       }
     }
@@ -57,7 +60,7 @@
       const file = fileList[i];
       const extension = file.name.split(".").pop().toLowerCase();
 
-      if (["jpg", "webp", "jpeg", "png"].includes(extension)) {
+      if (["jpg", "webp", "jpeg", "png", "avif"].includes(extension)) {
         images = [...images, file];
       }
     }
@@ -95,7 +98,7 @@
   <div class="flex justify-center items-center min-h-[100dvh] p-2">
     <main class="flex flex-row flex-wrap justify-center gap-10 my-auto">
       <!-- UPLOAD SECTION -->
-      <section class="flex flex-col justify-center items-center gap-6 max-w-[250px] max-h-[350px] my-auto">
+      <section class="flex flex-col justify-center items-center gap-6 max-w-[250px] max-h-[450px] my-auto">
         <div class="drop-area w-full h-[100px] sm:h-[200px]" on:dragover={handleDragOver} on:drop={handleDrop} role="application">Drag images here...</div>
         <input type="file" multiple on:change={handleAddImage} />
         <div class="flex flex-col justify-center items-center gap-2">
@@ -105,6 +108,10 @@
             disabled={images.length === 0 || isCompressing || !connected}>{isCompressing ? `Compressing...` : "Compress"}</button
           >
           <button on:click={() => (isSingleCompress = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button>
+          <button on:click={() => (showModal = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0 || isCompressing}
+            >Batch EXIF</button
+          >
+          <!-- <button on:click={() => (isSingleCompress = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button> -->
         </div>
       </section>
 
@@ -137,6 +144,7 @@
         <Slider title="Resolution" min="144" max="3456" bind:value={resolution} />
       </section>
     </main>
+    <Modal bind:showModal {images} />
   </div>
 {/if}
 

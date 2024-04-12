@@ -8,6 +8,7 @@ import { createServer } from "http";
 import archiver from "archiver";
 import { rimraf } from "rimraf";
 import dotenv from "dotenv";
+import { exec } from "child_process";
 
 dotenv.config();
 const ORIGIN = process.env.ORIGIN;
@@ -20,6 +21,24 @@ app.use(cors({ origin: ORIGIN }));
 
 const upload = multer();
 app.get("/", (req, res) => res.send("HELLO WORLD"));
+
+app.post("/image/exif", upload.array("img"), async (req, res) => {
+  const orie = ["Horizontal (normal)", "Rotate 90 CW", "Rotate 180", "Rotate 270 CW", "Mirror horizontal", "Mirror vertical", "Mirror horizontal and rotate 270 CW", "Mirror horizontal and rotate 90 CW"];
+
+  const images = req.files;
+  const { brand, model } = req.body;
+  // console.log(images);
+  images.forEach((img) => {
+    fs.writeFile(img.originalname, img.buffer, () => {});
+    // const command = 'ex.exe "${img.originalname}" -Make="${brand}" -Model="${model}" -DateTimeOriginal="2022:12:25 02:00:00" -ExposureTime="1/125" -FNumber=5.6 -ISO=400 -FocalLength=50 -OffsetTimeOriginal="+08:00" -Orientation="${orie[0]}'; // Replace with the desired command
+    const command = `ex.exe "${img.originalname}" -overwrite_original -Make="${brand}" -Model="${model}" -OffsetTimeOriginal="+08:00"`; 
+    exec(command, (error, stdout) => {
+      if (error) console.error(`exec error: ${error}`);
+      else console.log(stdout.trim());
+    });
+  });
+  res.status(200).json({ message: "Success" });
+});
 
 app.post("/image", upload.array("img"), async (req, res) => {
   const images = req.files;
