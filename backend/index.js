@@ -46,23 +46,37 @@ app.post("/image", upload.array("img"), async (req, res) => {
   const effort = parseInt(req.body.effort);
   const resolution = parseInt(req.body.resolution);
   const newFileName = req.body.newFileName;
+  const exif = req.body.exif ? JSON.parse(req.body.exif) : null; 
 
+  let info = ""
   const results = [];
   const promises = [];
   images.forEach((img) => results.push({ originalSize: img.size, newSize: 0 }));
   for (let [ind, img] of images.entries()) {
+    // console.log(img)
+    const dest = `../Compressed Images/${newFileName || img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`; 
     promises.push(
       await sharp(img.buffer)
         .resize(resolution, resolution, { fit: "outside", withoutEnlargement: true })
         .avif({ effort, quality })
         .keepExif()
         .keepIccProfile()
-        .toFile(`../Compressed Images/${newFileName ?? img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`)
+        .toFile(dest)
         .then((res) => (results[ind].newSize = res.size))
     );
+    if (exif) {
+      const command = `ex.exe "${dest}" -overwrite_original -Make="${exif.brand}" -Model="${exif.model}" -OffsetTimeOriginal="+08:00"`; 
+      // ex.exe IMG_20230201_095120_Hyper.jpg -overwrite_original -Make="Samsung" -Model="S20" -OffsetTimeOriginal="+08:00"
+      exec(command, (error, stdout) => {
+        if (error) info += "Error changing exif!\n";
+        else console.log(stdout.trim());
+      });
+    }
   }
   await Promise.all(promises);
-  return res.status(200).json({ message: "Success", results });
+  
+  
+  return res.status(200).json({ message: "Success", results, info });
   // const promises = images.map(async (img) => {
   //   results.push(await sharp(img.buffer)
   //     .resize(resolution, resolution, { fit: "outside", withoutEnlargement: true })

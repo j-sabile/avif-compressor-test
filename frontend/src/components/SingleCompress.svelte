@@ -1,5 +1,8 @@
 <script>
   export let images;
+  export let brand;
+  export let model;
+
   import presets from "../data/presets";
   import Slider from "./Slider.svelte";
   import Spinner from "./Spinner.svelte";
@@ -23,10 +26,11 @@
     // formData.append("effort", String(effort));
     formData.append("effort", "1");
     formData.append("img", images[currImg]);
-    formData.append("newFileName", images[currImg].newName);
+    if (images[currImg].newName) formData.append("newFileName", images[currImg].newName);
+    if (brand && model) formData.append("exif", JSON.stringify({ brand, model }));
 
     let id = queue.length;
-    console.log(images)
+    console.log(images);
     queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true }];
     fetch("http://localhost:3000/image", { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {
@@ -34,6 +38,11 @@
         const data = (await res.json()).results[0];
         queue[id].originalSize = data.originalSize;
         queue[id].newSize = data.newSize;
+      } else {
+        queue[id].isProcessing = false;
+        const data = (await res.json()).results[0];
+        queue[id].originalSize = data.originalSize;
+        queue[id].newSize = "ERROR";
       }
     });
     inputPreset = "";
@@ -70,7 +79,7 @@
               {item.fileName.length > 15 ? item.fileName.slice(0, 8) + "..." + item.fileName.slice(item.fileName.length - 6) : item.fileName}
             </h6>
             <p>
-              {`${item.newSize? (item.originalSize/1024**2).toFixed(2)+"MB - "+(item.newSize/1024**2).toFixed(2)+"MB":"..."}`}
+              {`${item.newSize ? (item.originalSize / 1024 ** 2).toFixed(2) + "MB - " + (item.newSize / 1024 ** 2).toFixed(2) + "MB" : "..."}`}
             </p>
           </div>
           {#if item.isProcessing}

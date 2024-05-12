@@ -14,6 +14,8 @@
   let connected = true;
   let canDownload = false;
   let showModal = false;
+  let brand = "";
+  let model = "";
 
   // const socket = io(import.meta.env.VITE_API);
   // socket.on("compressed", (t) => console.log(t + " received"));
@@ -98,7 +100,7 @@
   };
 
   const rename = (filename) => {
-    const patterns = [/^PXL_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})$/, /^AGC_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})$/];
+    const patterns = [/^PXL_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})$/, /^AGC_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})$/, /^IMG_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})/];
 
     for (let [_, pattern] of patterns.entries()) {
       if (!pattern.test(filename)) continue;
@@ -114,7 +116,7 @@
 </script>
 
 {#if isSingleCompress}
-  <SingleCompress {images} />
+  <SingleCompress {images} bind:brand bind:model />
 {:else}
   <div class="flex justify-center items-center min-h-[100dvh] p-2">
     <main class="flex flex-row flex-wrap justify-center gap-10 my-auto">
@@ -166,7 +168,7 @@
         <Slider title="Resolution" min="144" max="3456" bind:value={resolution} />
       </section>
     </main>
-    <Modal bind:showModal {images} />
+    <Modal bind:showModal {images} bind:brand bind:model />
   </div>
 {/if}
 

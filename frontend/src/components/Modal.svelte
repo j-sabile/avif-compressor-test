@@ -4,25 +4,26 @@
 
   let dialog; // HTMLDialogElement
   let isEditing = false;
-  let brand = "";
-  let model = "";
+  export let brand = "";
+  export let model = "";
 
   $: if (dialog && showModal) dialog.showModal();
   const orie = ["Horizontal (normal)", "Rotate 90 CW", "Rotate 180", "Rotate 270 CW", "Mirror horizontal", "Mirror vertical", "Mirror horizontal and rotate 270 CW", "Mirror horizontal and rotate 90 CW"];
   const handleEdit = async (e) => {
     e.stopPropagation();
     console.log(images);
-    isEditing = true;
-    const formData = new FormData();
-    formData.append("brand", brand);
-    formData.append("model", model);
-    images.forEach((img) => formData.append("img", img));
-    const res = await fetch(`${import.meta.env.VITE_API}/image/exif`, {
-      method: "POST",
-      body: formData,
-    });
-    if (res.ok) alert("Success!");
-    isEditing = false;
+    dialog.close();
+    // isEditing = true;
+    // const formData = new FormData();
+    // formData.append("brand", brand);
+    // formData.append("model", model);
+    // images.forEach((img) => formData.append("img", img));
+    // const res = await fetch(`${import.meta.env.VITE_API}/image/exif`, {
+    //   method: "POST",
+    //   body: formData,
+    // });
+    // if (res.ok) alert("Success!");
+    // isEditing = false;
   };
 </script>
 
@@ -35,11 +36,9 @@
       <input type="text" placeholder="Brand" bind:value={brand} class="text-black rounded outline-none px-2 py-1 my-2" />
       <input type="text" placeholder="Model" bind:value={model} class="text-black rounded outline-none px-2 py-1 my-2" />
       <div class="flex flex-row gap-4 justify-end mt-4">
-          <button type="button" on:click={() => dialog.close()} class="text-white border-2 rounded-lg px-5 py-2 border-neutral-900">Close</button>
-          <button type="submit" on:click={handleEdit} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 text-white ${isEditing ? "brightness-75" : "hover:brightness-90"}`} disabled={isEditing}>{isEditing ? "Editing..." : "Edit"}</button>
-
+        <button type="button" on:click={() => dialog.close()} class="text-white border-2 rounded-lg px-5 py-2 border-neutral-900">Close</button>
+        <button type="button" on:click={handleEdit} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 text-white ${isEditing ? "brightness-75" : "hover:brightness-90"}`} disabled={isEditing}>{isEditing ? "Editing..." : "Edit"}</button>
       </div>
-
     </form>
   </div>
 </dialog>
