@@ -20,10 +20,14 @@
 
     formData.append("resolution", selectedPreset[0]);
     formData.append("quality", selectedPreset[1]);
+    // formData.append("effort", String(effort));
     formData.append("effort", "1");
     formData.append("img", images[currImg]);
+    formData.append("newFileName", images[currImg].newName);
+
     let id = queue.length;
-    queue = [...queue, { fileName: images[currImg].name.replace("_Hyper", "").replace("IMG_", "").split(".")[0], isProcessing: true }];
+    console.log(images)
+    queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true }];
     fetch("http://localhost:3000/image", { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {
         queue[id].isProcessing = false;
@@ -42,7 +46,7 @@
   <div class="flex flex-col justify-center items-center flex-grow">
     <div class="flex flex-row justify-between gap-4 w-full p-2">
       <p>{`${(images[currImg].size / 1024 ** 2).toFixed(2)}MB`}</p>
-      <p>{images[currImg].name}</p>
+      <p>{images[currImg].newName ?? images[currImg].name}</p>
       <p>{`${currImg + 1}/${images.length}`}</p>
     </div>
     <img src={URL.createObjectURL(images[currImg])} alt={`image${currImg + 1}`} class="flex-grow object-contain overflow-hidden" />

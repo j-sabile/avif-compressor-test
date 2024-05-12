@@ -90,6 +90,27 @@
   const handleSortClick = () => {
     images = images.sort((a, b) => a.name.localeCompare(b.name));
   };
+
+  const handleRename = () => {
+    const newFileNames = new Set();
+    for (let [_, img] of images.entries()) img.newName = rename(img.name.split(".")[0]);
+    images = images;
+  };
+
+  const rename = (filename) => {
+    const patterns = [/^PXL_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})$/, /^AGC_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})$/];
+
+    for (let [_, pattern] of patterns.entries()) {
+      if (!pattern.test(filename)) continue;
+      const [, year, month, day, hour, minute, second, millisecond] = filename.match(pattern);
+      const newFileName = `IMG_${year}${month}${day}_${hour}${minute}${second}${millisecond}`;
+      const n = 21 - newFileName.length;
+      if (n == 0) return newFileName;
+      else if (n < 0) return newFileName.slice(0, n);
+      return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString());
+    }
+    return "No Match";
+  };
 </script>
 
 {#if isSingleCompress}
@@ -108,9 +129,6 @@
             disabled={images.length === 0 || isCompressing || !connected}>{isCompressing ? `Compressing...` : "Compress"}</button
           >
           <button on:click={() => (isSingleCompress = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button>
-          <button on:click={() => (showModal = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0 || isCompressing}
-            >Batch EXIF</button
-          >
           <!-- <button on:click={() => (isSingleCompress = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button> -->
         </div>
       </section>
@@ -122,7 +140,7 @@
           <ul class="flex flex-col gap-2 w-full overflow-auto scroll pe-2">
             {#each images as image, index}
               <li class="flex flex-row justify-between bg-neutral-900 rounded-md shadow w-full px-4 py-1">
-                <p>{image.name}</p>
+                <p>{image.newName ?? image.name}</p>
                 <button on:click={() => (images = images.filter((_, i) => i !== index))}>&#x2715;</button>
               </li>
             {:else}
@@ -130,7 +148,11 @@
             {/each}
           </ul>
         </div>
-        <button class="bg-neutral-900 rounded-lg shadow px-5 py-2 hover:brightness-90" on:click={handleSortClick}>SORT</button>
+        <button class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} on:click={handleSortClick} disabled={images.length === 0}>SORT</button>
+        <button class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} on:click={handleRename} disabled={images.length === 0}>RENAME</button>
+        <button on:click={() => (showModal = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0 || isCompressing}
+          >Batch EXIF</button
+        >
         {#if canDownload}
           <button on:click={handleDownload} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`}>Download</button>
         {/if}
