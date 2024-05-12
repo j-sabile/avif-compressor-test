@@ -1,6 +1,5 @@
 <script>
   export let showModal; // boolean
-  export let images;
 
   let dialog; // HTMLDialogElement
   let isEditing = false;
@@ -11,19 +10,7 @@
   const orie = ["Horizontal (normal)", "Rotate 90 CW", "Rotate 180", "Rotate 270 CW", "Mirror horizontal", "Mirror vertical", "Mirror horizontal and rotate 270 CW", "Mirror horizontal and rotate 90 CW"];
   const handleEdit = async (e) => {
     e.stopPropagation();
-    console.log(images);
     dialog.close();
-    // isEditing = true;
-    // const formData = new FormData();
-    // formData.append("brand", brand);
-    // formData.append("model", model);
-    // images.forEach((img) => formData.append("img", img));
-    // const res = await fetch(`${import.meta.env.VITE_API}/image/exif`, {
-    //   method: "POST",
-    //   body: formData,
-    // });
-    // if (res.ok) alert("Success!");
-    // isEditing = false;
   };
 </script>
 

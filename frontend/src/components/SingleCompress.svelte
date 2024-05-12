@@ -30,7 +30,7 @@
     if (brand && model) formData.append("exif", JSON.stringify({ brand, model }));
 
     let id = queue.length;
-    console.log(images);
+    // console.log(images);
     queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true }];
     fetch("http://localhost:3000/image", { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {

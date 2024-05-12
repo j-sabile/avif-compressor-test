@@ -90,26 +90,45 @@
   };
 
   const handleSortClick = () => {
-    images = images.sort((a, b) => a.name.localeCompare(b.name));
+    images = images.sort((a, b) => (a.newName || a.name).localeCompare(b.newName || b.name));
   };
 
   const handleRename = () => {
     const newFileNames = new Set();
-    for (let [_, img] of images.entries()) img.newName = rename(img.name.split(".")[0]);
+    for (let [_, img] of images.entries()) img.newName = rename(img.name.slice(0, img.name.lastIndexOf(".")));
     images = images;
   };
 
   const rename = (filename) => {
-    const patterns = [/^PXL_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})$/, /^AGC_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})$/, /^IMG_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d{0,})/];
+    const patterns = [
+      /^PXL_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
+      /^AGC_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
+      /^IMG_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
+      /^00000IMG_00000_BURST(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d*)/,
+      /^00100sPORTRAIT_00100_BURST(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d*)/,
+      /^PANO_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
+    ];
+
+    const ssPatterns = [/^Screenshot_(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d*)((_[a-z]+)(\.[a-z]+))*/];
+    // Screenshot_2023-02-10-21-24-18-892_com.android.deskclock
 
     for (let [_, pattern] of patterns.entries()) {
       if (!pattern.test(filename)) continue;
       const [, year, month, day, hour, minute, second, millisecond] = filename.match(pattern);
       const newFileName = `IMG_${year}${month}${day}_${hour}${minute}${second}${millisecond}`;
-      const n = 21 - newFileName.length;
+      const n = 22 - newFileName.length;
       if (n == 0) return newFileName;
       else if (n < 0) return newFileName.slice(0, n);
-      return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString());
+      return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString()).padStart(n, "0");
+    }
+    for (let [_, pattern] of ssPatterns.entries()) {
+      if (!pattern.test(filename)) continue;
+      const [, year, month, day, hour, minute, second, millisecond] = filename.match(pattern);
+      const newFileName = `Screenshot_${year}${month}${day}_${hour}${minute}${second}${millisecond}`;
+      const n = 29 - newFileName.length;
+      if (n == 0) return newFileName;
+      else if (n < 0) return newFileName.slice(0, n);
+      return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString()).padStart(n, "0");
     }
     return "No Match";
   };
@@ -168,7 +187,7 @@
         <Slider title="Resolution" min="144" max="3456" bind:value={resolution} />
       </section>
     </main>
-    <Modal bind:showModal {images} bind:brand bind:model />
+    <Modal bind:showModal bind:brand bind:model />
   </div>
 {/if}
 
