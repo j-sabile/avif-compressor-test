@@ -29,9 +29,9 @@ app.post("/image/exif", upload.array("img"), async (req, res) => {
   const { brand, model } = req.body;
   // console.log(images);
   images.forEach((img) => {
-    fs.writeFile(img.originalname, img.buffer, () => {});
+    fs.writeFile(img.originalname, img.buffer, () => { });
     // const command = 'ex.exe "${img.originalname}" -Make="${brand}" -Model="${model}" -DateTimeOriginal="2022:12:25 02:00:00" -ExposureTime="1/125" -FNumber=5.6 -ISO=400 -FocalLength=50 -OffsetTimeOriginal="+08:00" -Orientation="${orie[0]}'; // Replace with the desired command
-    const command = `ex.exe "${img.originalname}" -overwrite_original -Make="${brand}" -Model="${model}" -OffsetTimeOriginal="+08:00"`; 
+    const command = `ex.exe "${img.originalname}" -overwrite_original -Make="${brand}" -Model="${model}" -OffsetTimeOriginal="+08:00"`;
     exec(command, (error, stdout) => {
       if (error) console.error(`exec error: ${error}`);
       else console.log(stdout.trim());
@@ -46,7 +46,7 @@ app.post("/image", upload.array("img"), async (req, res) => {
   const effort = parseInt(req.body.effort);
   const resolution = parseInt(req.body.resolution);
   const newFileName = req.body.newFileName;
-  const exif = req.body.exif ? JSON.parse(req.body.exif) : null; 
+  const exif = req.body.exif ? JSON.parse(req.body.exif) : null;
 
   let info = ""
   const results = [];
@@ -54,7 +54,7 @@ app.post("/image", upload.array("img"), async (req, res) => {
   images.forEach((img) => results.push({ originalSize: img.size, newSize: 0 }));
   for (let [ind, img] of images.entries()) {
     // console.log(img)
-    const dest = `../Compressed Images/${newFileName || img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`; 
+    const dest = `../Compressed Images/${newFileName || img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`;
     promises.push(
       await sharp(img.buffer)
         .resize(resolution, resolution, { fit: "outside", withoutEnlargement: true })
@@ -65,7 +65,7 @@ app.post("/image", upload.array("img"), async (req, res) => {
         .then((res) => (results[ind].newSize = res.size))
     );
     if (exif) {
-      const command = `ex.exe "${dest}" -overwrite_original -Make="${exif.brand}" -Model="${exif.model}" -OffsetTimeOriginal="+08:00"`; 
+      const command = `ex.exe "${dest}" -overwrite_original -Make="${exif.brand}" -Model="${exif.model}" -OffsetTimeOriginal="+08:00"`;
       // ex.exe IMG_20230201_095120_Hyper.jpg -overwrite_original -Make="Samsung" -Model="S20" -OffsetTimeOriginal="+08:00"
       exec(command, (error, stdout) => {
         if (error) info += "Error changing exif!\n";
@@ -74,8 +74,8 @@ app.post("/image", upload.array("img"), async (req, res) => {
     }
   }
   await Promise.all(promises);
-  
-  
+
+
   return res.status(200).json({ message: "Success", results, info });
   // const promises = images.map(async (img) => {
   //   results.push(await sharp(img.buffer)
@@ -111,6 +111,20 @@ app.post("/download", (req, res) => {
   archive.directory(`./compressed/${socketId}/`, false);
   archive.finalize();
 });
+
+app.post("/no-compress", upload.array("img"), (req, res) => {
+  const images = req.files;
+  const { brand, model, newNames, extensions } = req.body;
+  for (let [ind, img] of images.entries()) {
+    fs.writeFile(`../Compressed Images/${newNames[ind]}.${extensions[ind]}`, img.buffer, () => {});
+    const command = `ex.exe "../Compressed Images/${newNames[ind]}.${extensions[ind]}" -overwrite_original -Make="${brand}" -Model="${model}" -OffsetTimeOriginal="+08:00"`;
+    exec(command, (error, stdout) => {
+      if (error) console.error(`exec error: ${error}`);
+      else console.log(stdout.trim());
+    });
+  }
+  res.sendStatus(200);
+})
 
 // SOCKET.IO
 const users = new Set();

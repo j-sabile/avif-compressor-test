@@ -1,4 +1,6 @@
 <script>
+  const ALLOWED_FORMATS = ["jpg", "webp", "jpeg", "png", "avif"];
+
   import { io } from "socket.io-client";
 
   import Slider from "./components/Slider.svelte";
@@ -47,7 +49,7 @@
       const file = fileList[i];
       const extension = file.name.split(".").pop().toLowerCase();
 
-      if (["jpg", "webp", "jpeg", "png", "avif"].includes(extension)) {
+      if (ALLOWED_FORMATS.includes(extension)) {
         images = [...images, file];
       }
     }
@@ -62,7 +64,7 @@
       const file = fileList[i];
       const extension = file.name.split(".").pop().toLowerCase();
 
-      if (["jpg", "webp", "jpeg", "png", "avif"].includes(extension)) {
+      if (ALLOWED_FORMATS.includes(extension)) {
         images = [...images, file];
       }
     }
@@ -95,7 +97,10 @@
 
   const handleRename = () => {
     const newFileNames = new Set();
-    for (let [_, img] of images.entries()) img.newName = rename(img.name.slice(0, img.name.lastIndexOf(".")));
+    for (let [_, img] of images.entries()) {
+      img.newName = rename(img.name.slice(0, img.name.lastIndexOf(".")));
+      img.extension = img.name.slice(img.name.lastIndexOf(".") + 1);
+    }
     images = images;
   };
 
@@ -132,6 +137,21 @@
     }
     return "No Match";
   };
+
+  const handleDontCompress = async () => {
+    const formData = new FormData();
+    formData.append("brand", brand);
+    formData.append("model", model);
+    images.forEach((img) => {
+      formData.append("img", img);
+      formData.append("newNames", img.newName);
+      formData.append("extensions", img.extension);
+    });
+    const res = await fetch(`${import.meta.env.VITE_API}/no-compress`, {
+      method: "POST",
+      body: formData,
+    });
+  };
 </script>
 
 {#if isSingleCompress}
@@ -149,7 +169,14 @@
             class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing || !connected ? "brightness-75" : "hover:brightness-90"}`}
             disabled={images.length === 0 || isCompressing || !connected}>{isCompressing ? `Compressing...` : "Compress"}</button
           >
-          <button on:click={() => (isSingleCompress = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button>
+          <button
+            on:click={() => (isSingleCompress = true)}
+            class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`}
+            disabled={images.length === 0}>Single Compress</button
+          >
+          <button on:click={handleDontCompress} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}
+            >Don't Compress</button
+          >
           <!-- <button on:click={() => (isSingleCompress = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button> -->
         </div>
       </section>
@@ -169,10 +196,20 @@
             {/each}
           </ul>
         </div>
-        <button class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} on:click={handleSortClick} disabled={images.length === 0}>SORT</button>
-        <button class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} on:click={handleRename} disabled={images.length === 0}>RENAME</button>
-        <button on:click={() => (showModal = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0 || isCompressing}
-          >Batch EXIF</button
+        <button
+          class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`}
+          on:click={handleSortClick}
+          disabled={images.length === 0}>SORT</button
+        >
+        <button
+          class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`}
+          on:click={handleRename}
+          disabled={images.length === 0}>RENAME</button
+        >
+        <button
+          on:click={() => (showModal = true)}
+          class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`}
+          disabled={images.length === 0 || isCompressing}>Batch EXIF</button
         >
         {#if canDownload}
           <button on:click={handleDownload} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`}>Download</button>
