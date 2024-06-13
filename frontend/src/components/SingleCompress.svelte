@@ -23,8 +23,8 @@
 
     formData.append("resolution", selectedPreset[0]);
     formData.append("quality", selectedPreset[1]);
-    // formData.append("effort", String(effort));
-    formData.append("effort", "1");
+    formData.append("effort", String(effort));
+    // formData.append("effort", "1");
     formData.append("img", images[currImg]);
     if (images[currImg].newName) formData.append("newFileName", images[currImg].newName);
     if (brand && model) formData.append("exif", JSON.stringify({ brand, model }));
@@ -64,7 +64,7 @@
   <section class="flex flex-col gap-4 p-2">
     <form class="flex flex-col" on:submit={handleEnterPreset}>
       <label for="preset">Preset</label>
-      <input class="text-black rounded outline-none ps-1" type="text" bind:value={inputPreset} id="preset" />
+      <input class="text-white rounded outline-none ps-1" type="text" placeholder="Enter preset" bind:value={inputPreset} id="preset" />
     </form>
     <Slider title="Effort" min="0" max="9" bind:value={effort} />
     <div class="flex flex-row justify-center gap-2 w-full">

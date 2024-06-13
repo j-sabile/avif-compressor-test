@@ -20,8 +20,8 @@
   <div on:click|stopPropagation>
     <form on:submit={handleEdit}>
       <h2 class="text-white text-lg font-semibold text-center my-2">Edit Make and Camera Model Name</h2>
-      <input type="text" placeholder="Brand" bind:value={brand} class="text-black rounded outline-none px-2 py-1 my-2" />
-      <input type="text" placeholder="Model" bind:value={model} class="text-black rounded outline-none px-2 py-1 my-2" />
+      <input type="text" placeholder="Brand" bind:value={brand} class="text-white rounded outline-none px-2 py-1 my-2" />
+      <input type="text" placeholder="Model" bind:value={model} class="text-white rounded outline-none px-2 py-1 my-2" />
       <div class="flex flex-row gap-4 justify-end mt-4">
         <button type="button" on:click={() => dialog.close()} class="text-white border-2 rounded-lg px-5 py-2 border-neutral-900">Close</button>
         <button type="button" on:click={handleEdit} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 text-white ${isEditing ? "brightness-75" : "hover:brightness-90"}`} disabled={isEditing}>{isEditing ? "Editing..." : "Edit"}</button>
