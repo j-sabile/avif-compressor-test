@@ -135,7 +135,7 @@
       else if (n < 0) return newFileName.slice(0, n);
       return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString()).padStart(n, "0");
     }
-    return "No Match";
+    return filename;
   };
 
   const handleDontCompress = async () => {
