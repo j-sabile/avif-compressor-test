@@ -1,6 +1,6 @@
 <script>
   import { API } from "../constants";
-  import { fly } from 'svelte/transition';
+  import { fly } from "svelte/transition";
 
   export let images;
   export let brand;
@@ -34,7 +34,7 @@
 
     let id = queue.length;
     // console.log(images);
-    queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true }];
+    queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true, res: selectedPreset[0], quality: selectedPreset[1] }];
     fetch(`${API}/image`, { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {
         queue[id].isProcessing = false;
@@ -79,7 +79,7 @@
     <img src={URL.createObjectURL(images[currImg])} alt={`image${currImg + 1}`} class="flex-grow object-contain overflow-hidden" />
   </div>
 
-  <section class="flex flex-col gap-4 p-2">
+  <section class="flex flex-col gap-4 p-2 min-w-[250px]">
     <form class="flex flex-col" on:submit={handleEnterPreset}>
       <label for="preset">Preset</label>
       <input class="text-white rounded outline-none ps-1" type="text" placeholder="Enter preset" bind:value={inputPreset} id="preset" />
@@ -89,14 +89,18 @@
       <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={handlePrevImage}>{"<"}</button>
       <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={handleNextImage}>{">"}</button>
     </div>
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1 overflow-y-auto">
       {#each queue.toReversed() as item (item.fileName)}
-        <div class="flex flex-row justify-between items-center bg-neutral-700 rounded shadow px-2 py-1" in:fly={{ y: -100, duration: 150 }}>
+        <div class="flex flex-row justify-between items-center gap-2 bg-neutral-700 rounded shadow px-2 py-1" in:fly={{ y: -100, duration: 150 }}>
+          <div class="flex flex-col justify-center items-center text-xs font-thin italic">
+            <p>{item.res}p</p>
+            <p>{item.quality}</p>
+          </div>
           <div class="flex flex-col">
             <h6>
               {item.fileName.length > 15 ? item.fileName.slice(0, 8) + "..." + item.fileName.slice(item.fileName.length - 6) : item.fileName}
             </h6>
-            <p>
+            <p class="text-sm text-center">
               {`${item.newSize ? (item.originalSize / 1024 ** 2).toFixed(2) + "MB - " + (item.newSize / 1024 ** 2).toFixed(2) + "MB" : "..."}`}
             </p>
           </div>
