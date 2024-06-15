@@ -1,6 +1,7 @@
 <script>
   import { API } from "../constants";
   import { fly } from "svelte/transition";
+  import { v4 as uuidv4 } from "uuid";
 
   export let images;
   export let brand;
@@ -37,7 +38,7 @@
 
     let id = queue.length;
     // console.log(images);
-    queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true, res: selectedPreset[0], quality: selectedPreset[1] }];
+    queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true, res: selectedPreset[0], quality: selectedPreset[1], id: uuidv4() }];
     fetch(`${API}/image`, { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {
         queue[id].isProcessing = false;
@@ -93,7 +94,7 @@
       <button on:click={handleNextImage}> <Next /> </button>
     </div>
     <div class="flex flex-col gap-1 overflow-y-auto">
-      {#each queue.toReversed() as item (item.fileName)}
+      {#each queue.toReversed() as item (item.id)}
         <div class="flex flex-row justify-between items-center gap-2 bg-neutral-700 rounded shadow px-2 py-1" in:fly={{ y: -100, duration: 150 }}>
           <div class="flex flex-col justify-center items-center text-xs font-thin italic">
             <p>{item.res}p</p>
