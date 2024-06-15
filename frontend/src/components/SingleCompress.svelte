@@ -51,6 +51,21 @@
     if (currImg + 1 === images.length) return alert("You've reached the end.");
     currImg++;
   };
+
+  const onKeyDown = (e) => {
+    if (!e.ctrlKey || e.key === "Control") return;
+    if (e.key === "ArrowRight") handleNextImage();
+    else if (e.key === "ArrowLeft") handlePrevImage();
+  };
+
+  const handlePrevImage = () => {
+    currImg - 1 >= 0 && currImg--;
+  };
+
+  const handleNextImage = () => {
+    if (currImg + 1 === images.length) return alert("You've reached the end.");
+    currImg++;
+  };
 </script>
 
 <main class="flex flex-row h-[100dvh]">
@@ -70,8 +85,8 @@
     </form>
     <Slider title="Effort" min="0" max="9" bind:value={effort} />
     <div class="flex flex-row justify-center gap-2 w-full">
-      <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={() => currImg - 1 >= 0 && currImg--}>{"<"}</button>
-      <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={() => currImg + 1 < images.length && currImg++}>{">"}</button>
+      <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={handlePrevImage}>{"<"}</button>
+      <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={handleNextImage}>{">"}</button>
     </div>
     <div class="flex flex-col gap-1">
       {#each queue as item}
@@ -94,6 +109,8 @@
     </div>
   </section>
 </main>
+
+<svelte:window on:keydown={onKeyDown} />
 
 <style>
 </style>
