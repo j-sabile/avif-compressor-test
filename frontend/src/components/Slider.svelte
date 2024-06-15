@@ -8,7 +8,7 @@
 <div class="flex flex-col gap-1 mb-2">
   <div class="flex gap-1 justify-between">
     <h6>{title}</h6>
-    <input class="rounded text-black max-w-14 ps-1" type="number" bind:value />
+    <input class="rounded text-white max-w-14 ps-1" type="number" bind:value />
   </div>
   <input type="range" {min} {max} bind:value class="slider" />
 </div>

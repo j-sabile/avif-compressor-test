@@ -9,6 +9,9 @@
   import presets from "../data/presets";
   import Slider from "./Slider.svelte";
   import Spinner from "./Spinner.svelte";
+  import Prev from "../svg/Prev.svelte";
+  import Next from "../svg/Next.svelte";
+
   let queue = [];
   let currImg = 0;
   let inputPreset = "";
@@ -86,8 +89,8 @@
     </form>
     <Slider title="Effort" min="0" max="9" bind:value={effort} />
     <div class="flex flex-row justify-center gap-2 w-full">
-      <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={handlePrevImage}>{"<"}</button>
-      <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={handleNextImage}>{">"}</button>
+      <button on:click={handlePrevImage}> <Prev /> </button>
+      <button on:click={handleNextImage}> <Next /> </button>
     </div>
     <div class="flex flex-col gap-1 overflow-y-auto">
       {#each queue.toReversed() as item (item.fileName)}
@@ -101,7 +104,7 @@
               {item.fileName.length > 15 ? item.fileName.slice(0, 8) + "..." + item.fileName.slice(item.fileName.length - 6) : item.fileName}
             </h6>
             <p class="text-sm text-center">
-              {`${item.newSize ? (item.originalSize / 1024 ** 2).toFixed(2) + "MB - " + (item.newSize / 1024 ** 2).toFixed(2) + "MB" : "..."}`}
+              {`${item.newSize ? (item.originalSize / 1024 ** 2).toFixed(2) + "MB - " + (item.newSize / 1024 ** 2).toFixed(2) + "MB" : " - "}`}
             </p>
           </div>
           {#if item.isProcessing}
