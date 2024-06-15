@@ -1,4 +1,6 @@
 <script>
+  import { API } from "../constants";
+
   export let images;
   export let brand;
   export let model;
@@ -32,7 +34,7 @@
     let id = queue.length;
     // console.log(images);
     queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true }];
-    fetch("http://localhost:3000/image", { method: "POST", body: formData }).then(async (res) => {
+    fetch(`${API}/image`, { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {
         queue[id].isProcessing = false;
         const data = (await res.json()).results[0];

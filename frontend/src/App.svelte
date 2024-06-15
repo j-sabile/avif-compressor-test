@@ -1,5 +1,5 @@
 <script>
-  const ALLOWED_FORMATS = ["jpg", "webp", "jpeg", "png", "avif"];
+  import { ALLOWED_FORMATS, API, IMG_PATTERNS, SS_PATTERNS } from "./constants";
 
   import { io } from "socket.io-client";
 
@@ -19,7 +19,7 @@
   let brand = "";
   let model = "";
 
-  // const socket = io(import.meta.env.VITE_API);
+  // const socket = io(API);
   // socket.on("compressed", (t) => console.log(t + " received"));
   // socket.on("connect", () => (connected = true));
 
@@ -32,7 +32,7 @@
     // formData.append("socketId", socket.id);
     images.forEach((img) => formData.append("img", img));
 
-    const res = await fetch(`${import.meta.env.VITE_API}/image`, {
+    const res = await fetch(`${API}/image`, {
       method: "POST",
       body: formData,
     });
@@ -71,7 +71,7 @@
   };
 
   const handleDownload = async () => {
-    fetch(`${import.meta.env.VITE_API}/download`, {
+    fetch(`${API}/download`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // body: JSON.stringify({ socketId: socket.id }),
@@ -105,19 +105,7 @@
   };
 
   const rename = (filename) => {
-    const patterns = [
-      /^PXL_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
-      /^AGC_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
-      /^IMG_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
-      /^00000IMG_00000_BURST(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d*)/,
-      /^00100sPORTRAIT_00100_BURST(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d*)/,
-      /^PANO_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
-    ];
-
-    const ssPatterns = [/^Screenshot_(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d*)((_[a-z]+)(\.[a-z]+))*/];
-    // Screenshot_2023-02-10-21-24-18-892_com.android.deskclock
-
-    for (let [_, pattern] of patterns.entries()) {
+    for (let [_, pattern] of IMG_PATTERNS.entries()) {
       if (!pattern.test(filename)) continue;
       const [, year, month, day, hour, minute, second, millisecond] = filename.match(pattern);
       const newFileName = `IMG_${year}${month}${day}_${hour}${minute}${second}${millisecond}`;
@@ -126,7 +114,7 @@
       else if (n < 0) return newFileName.slice(0, n);
       return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString()).padStart(n, "0");
     }
-    for (let [_, pattern] of ssPatterns.entries()) {
+    for (let [_, pattern] of SS_PATTERNS.entries()) {
       if (!pattern.test(filename)) continue;
       const [, year, month, day, hour, minute, second, millisecond] = filename.match(pattern);
       const newFileName = `Screenshot_${year}${month}${day}_${hour}${minute}${second}${millisecond}`;
@@ -147,7 +135,7 @@
       formData.append("newNames", img.newName);
       formData.append("extensions", img.extension);
     });
-    const res = await fetch(`${import.meta.env.VITE_API}/no-compress`, {
+    const res = await fetch(`${API}/no-compress`, {
       method: "POST",
       body: formData,
     });
