@@ -1,5 +1,6 @@
 <script>
   import { API } from "../constants";
+  import { fly } from 'svelte/transition';
 
   export let images;
   export let brand;
@@ -89,8 +90,8 @@
       <button class="bg-neutral-900 rounded shadow font-bold px-4 py-1 hover:brightness-90" on:click={handleNextImage}>{">"}</button>
     </div>
     <div class="flex flex-col gap-1">
-      {#each queue as item}
-        <div class="flex flex-row justify-between items-center bg-neutral-700 rounded shadow px-2 py-1">
+      {#each queue.toReversed() as item (item.fileName)}
+        <div class="flex flex-row justify-between items-center bg-neutral-700 rounded shadow px-2 py-1" in:fly={{ y: -100, duration: 150 }}>
           <div class="flex flex-col">
             <h6>
               {item.fileName.length > 15 ? item.fileName.slice(0, 8) + "..." + item.fileName.slice(item.fileName.length - 6) : item.fileName}
