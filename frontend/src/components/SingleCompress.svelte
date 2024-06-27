@@ -12,11 +12,15 @@
   import Spinner from "./Spinner.svelte";
   import Prev from "../svg/Prev.svelte";
   import Next from "../svg/Next.svelte";
+  import RotateCcw from "../svg/RotateCCW.svelte";
+  import RotateCw from "../svg/RotateCW.svelte";
+  import MirrorHorizontally from "../svg/MirrorHorizontally.svelte";
 
   let queue = [];
   let currImg = 0;
   let inputPreset = "";
   let effort = 6;
+  let orientation = null;
 
   const handleEnterPreset = (e) => {
     e.preventDefault();
@@ -31,13 +35,15 @@
     formData.append("resolution", selectedPreset[0]);
     formData.append("quality", selectedPreset[1]);
     formData.append("effort", String(effort));
-    // formData.append("effort", "1");
     formData.append("img", images[currImg]);
     if (images[currImg].newName) formData.append("newFileName", images[currImg].newName);
-    if (brand && model) formData.append("exif", JSON.stringify({ brand, model }));
+    let exif = {};
+    if (brand) exif.brand = brand;
+    if (model) exif.model = model;
+    if (orientation) exif.orientation = orientation;
+    if (Object.keys(exif).length > 0) formData.append("exif", JSON.stringify(exif));
 
     let id = queue.length;
-    // console.log(images);
     queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true, res: selectedPreset[0], quality: selectedPreset[1], id: uuidv4() }];
     fetch(`${API}/image`, { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {
@@ -52,9 +58,7 @@
         queue[id].newSize = "ERROR";
       }
     });
-    inputPreset = "";
-    if (currImg + 1 === images.length) return alert("You've reached the end.");
-    currImg++;
+    handleNextImage();
   };
 
   const onKeyDown = (e) => {
@@ -64,12 +68,21 @@
   };
 
   const handlePrevImage = () => {
-    currImg - 1 >= 0 && currImg--;
+    if (currImg <= 0) return;
+    currImg--;
+    orientation = null;
+    inputPreset = "";
   };
 
   const handleNextImage = () => {
     if (currImg + 1 === images.length) return alert("You've reached the end.");
     currImg++;
+    orientation = null;
+    inputPreset = "";
+  };
+
+  const getClassOrieBtn = (x, y) => {
+    return `bg-neutral-950 p-2 rounded shadow ${x == y ? "brightness-50" : ""}`;
   };
 </script>
 
@@ -89,6 +102,12 @@
       <input class="text-white rounded outline-none ps-1" type="text" placeholder="Enter preset" bind:value={inputPreset} id="preset" />
     </form>
     <Slider title="Effort" min="0" max="9" bind:value={effort} />
+    <div class="flex flex-row justify-center gap-2 w-full">
+      <button class={getClassOrieBtn(-1, orientation)} on:click={() => (orientation = -1)}><RotateCcw size="28px" /></button>
+      <button class={getClassOrieBtn(2, orientation)} on:click={() => (orientation = 2)}>180 </button>
+      <button class={getClassOrieBtn(1, orientation)} on:click={() => (orientation = 1)}><RotateCw size="28px" /></button>
+      <button class={getClassOrieBtn("mirror", orientation)} on:click={() => (orientation = "mirror")}><MirrorHorizontally size="28px" /></button>
+    </div>
     <div class="flex flex-row justify-center gap-2 w-full">
       <button on:click={handlePrevImage}> <Prev /> </button>
       <button on:click={handleNextImage}> <Next /> </button>

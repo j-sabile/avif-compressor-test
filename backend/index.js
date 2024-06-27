@@ -8,7 +8,7 @@ import { createServer } from "http";
 import archiver from "archiver";
 import { rimraf } from "rimraf";
 import dotenv from "dotenv";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 
 dotenv.config();
 const ORIGIN = process.env.ORIGIN;
@@ -29,7 +29,7 @@ app.post("/image/exif", upload.array("img"), async (req, res) => {
   const { brand, model } = req.body;
   // console.log(images);
   images.forEach((img) => {
-    fs.writeFile(img.originalname, img.buffer, () => { });
+    fs.writeFile(img.originalname, img.buffer, () => {});
     // const command = 'ex.exe "${img.originalname}" -Make="${brand}" -Model="${model}" -DateTimeOriginal="2022:12:25 02:00:00" -ExposureTime="1/125" -FNumber=5.6 -ISO=400 -FocalLength=50 -OffsetTimeOriginal="+08:00" -Orientation="${orie[0]}'; // Replace with the desired command
     const command = `ex.exe "${img.originalname}" -overwrite_original -Make="${brand}" -Model="${model}" -OffsetTimeOriginal="+08:00"`;
     exec(command, (error, stdout) => {
@@ -48,7 +48,7 @@ app.post("/image", upload.array("img"), async (req, res) => {
   const newFileName = req.body.newFileName;
   const exif = req.body.exif ? JSON.parse(req.body.exif) : null;
 
-  let info = ""
+  let info = "";
   const results = [];
   const promises = [];
   images.forEach((img) => results.push({ originalSize: img.size, newSize: 0 }));
@@ -64,28 +64,51 @@ app.post("/image", upload.array("img"), async (req, res) => {
         .toFile(dest)
         .then((res) => (results[ind].newSize = res.size))
     );
+
+    await Promise.all(promises);
+
     if (exif) {
-      const command = `ex.exe "${dest}" -overwrite_original -Make="${exif.brand}" -Model="${exif.model}" -OffsetTimeOriginal="+08:00"`;
-      // ex.exe IMG_20230201_095120_Hyper.jpg -overwrite_original -Make="Samsung" -Model="S20" -OffsetTimeOriginal="+08:00"
-      exec(command, (error, stdout) => {
-        if (error) info += "Error changing exif!\n";
-        else console.log(stdout.trim());
-      });
+      const { brand, model, orientation } = exif;
+      let command = `ex.exe "${dest}"`;
+      if (brand) command += ` -Make=${brand}`;
+      if (model) command += ` -Model=${model}`;
+
+      // 1 = Horizontal (normal)
+      // 2 = Mirror horizontal
+      // 3 = Rotate 180
+      // 4 = Mirror vertical
+      // 5 = Mirror horizontal and rotate 270 CW
+      // 6 = Rotate 90 CW
+      // 7 = Mirror horizontal and rotate 90 CW
+      // 8 = Rotate 270 CW
+      const a = { "Horizontal (normal)": 0, "Rotate 90 CW": 1, "Rotate 180": 2, "Rotate 270 CW": 3 };
+      const b = ["Horizontal (normal)", "Rotate 90 CW", "Rotate 180", "Rotate 270 CW"]; //[...a.keys()]
+      const c = ["Mirror horizontal", "Mirror horizontal and rotate 90 CW"];
+      const d = ["Mirror vertical"];
+
+      if (typeof orientation === "string") {
+        command += ` -orientation#=2 -m -overwrite_original`;
+        exec(command, (error, stdout) => {
+          if (error) console.log(error);
+          if (stdout) console.log(stdout.trim());
+        });
+      } else if (orientation) {
+        const temp = `ex.exe "${dest}" -orientation`;
+        exec(temp, (err, stdout) => {
+          const currentOrientation = stdout.match(/:\s*(.*)/)[1];
+          console.log("currentOrientation", currentOrientation, a[currentOrientation], orientation, b.at((a[currentOrientation] + orientation) % 4));
+          const newOrientation = b.at((a[currentOrientation] + orientation) % 4);
+          command += ` -Orientation="${newOrientation}" -m -overwrite_original`;
+          exec(command, (error, stdout) => {
+            if (error) console.log(error);
+            if (stdout) console.log(stdout.trim());
+          });
+        });
+      }
     }
   }
-  await Promise.all(promises);
-
 
   return res.status(200).json({ message: "Success", results, info });
-  // const promises = images.map(async (img) => {
-  //   results.push(await sharp(img.buffer)
-  //     .resize(resolution, resolution, { fit: "outside", withoutEnlargement: true })
-  //     .avif({ effort, quality })
-  //     .keepExif()
-  //     .keepIccProfile()
-  //     .toFile(`../Compressed Images/${img.originalname.substring(0, img.originalname.lastIndexOf("."))}.avif`));
-  //   // io.to(socketId).emit("compressed", img.originalname);
-  // });
 });
 
 app.post("/download", (req, res) => {
@@ -124,7 +147,7 @@ app.post("/no-compress", upload.array("img"), (req, res) => {
     });
   }
   res.sendStatus(200);
-})
+});
 
 // SOCKET.IO
 const users = new Set();
