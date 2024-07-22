@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { API } from "../constants";
   import { fly } from "svelte/transition";
   import { v4 as uuidv4 } from "uuid";
@@ -22,29 +22,34 @@
   let effort = 6;
   let orientation = null;
 
+  const getResAndQual = (): undefined | [string, string] => {
+    const selectedPreset = presets[inputPreset];
+    if (selectedPreset !== undefined) return [selectedPreset[0], selectedPreset[1]];
+    const match = inputPreset.match(/(\d+) (\d+)/);
+    if (match) return [match[1], match[2]];
+    else return undefined;
+  };
+
   const handleEnterPreset = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    const selectedPreset = presets[inputPreset];
 
-    if (selectedPreset === undefined) {
-      inputPreset = "";
-      return alert("No preset for that value.");
-    }
+    const data = getResAndQual();
+    if (data === undefined) return alert("Invalid Input!");
 
-    formData.append("resolution", selectedPreset[0]);
-    formData.append("quality", selectedPreset[1]);
+    formData.append("resolution", data[0]);
+    formData.append("quality", data[1]);
     formData.append("effort", String(effort));
     formData.append("img", images[currImg]);
     if (images[currImg].newName) formData.append("newFileName", images[currImg].newName);
-    let exif = {};
+    let exif: { brand?: string; model?: string; orientation?: string } = {};
     if (brand) exif.brand = brand;
     if (model) exif.model = model;
     if (orientation) exif.orientation = orientation;
     if (Object.keys(exif).length > 0) formData.append("exif", JSON.stringify(exif));
 
     let id = queue.length;
-    queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true, res: selectedPreset[0], quality: selectedPreset[1], id: uuidv4() }];
+    queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true, res: data[0], quality: data[1], id: uuidv4() }];
     fetch(`${API}/image`, { method: "POST", body: formData }).then(async (res) => {
       if (res.status === 200) {
         queue[id].isProcessing = false;
