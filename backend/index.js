@@ -70,8 +70,8 @@ app.post("/image", upload.array("img"), async (req, res) => {
     if (exif) {
       const { brand, model, orientation } = exif;
       let command = `ex.exe "${dest}"`;
-      if (brand) command += ` -Make=${brand}`;
-      if (model) command += ` -Model=${model}`;
+      if (brand) command += ` -Make="${brand}"`;
+      if (model) command += ` -Model="${model}"`;
 
       // 1 = Horizontal (normal)
       // 2 = Mirror horizontal
@@ -103,6 +103,12 @@ app.post("/image", upload.array("img"), async (req, res) => {
             if (error) console.log(error);
             if (stdout) console.log(stdout.trim());
           });
+        });
+      } else {
+        command += ` -m -overwrite_original`;
+        exec(command, (error, stdout) => {
+          if (error) console.log(error);
+          if (stdout) console.log(stdout.trim());
         });
       }
     }
