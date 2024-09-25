@@ -15,12 +15,27 @@
   import RotateCcw from "../svg/RotateCCW.svelte";
   import RotateCw from "../svg/RotateCW.svelte";
   import MirrorHorizontally from "../svg/MirrorHorizontally.svelte";
+  import moment from "moment";
 
   let queue = [];
   let currImg = 0;
   let inputPreset = "";
   let effort = 6;
   let orientation = null;
+  let newDate = {
+    year: images[0].date.format("YYYY"),
+    month: images[0].date.format("MM"),
+    day: images[0].date.format("DD"),
+    hour: images[0].date.format("HH"),
+    minute: images[0].date.format("mm"),
+    second: images[0].date.format("ss"),
+  };
+
+  const getNewDate = () => {
+    const { year, month, day, hour, minute, second } = newDate;
+    const temp = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    return temp;
+  };
 
   const getResAndQual = (): undefined | [string, string] => {
     const selectedPreset = presets[inputPreset];
@@ -42,10 +57,12 @@
     formData.append("effort", String(effort));
     formData.append("img", images[currImg]);
     if (images[currImg].newName) formData.append("newFileName", images[currImg].newName);
-    let exif: { brand?: string; model?: string; orientation?: string } = {};
+
+    let exif: { brand?: string; model?: string; orientation?: string; newDate?: string } = {};
     if (brand) exif.brand = brand;
     if (model) exif.model = model;
     if (orientation) exif.orientation = orientation;
+    if (moment(getNewDate()).isValid() && images[currImg].date.format("YYYY-MM-DD HH:mm:ss") !== `${getNewDate()}`) exif.newDate = `${getNewDate()}.000+08:00`;
     if (Object.keys(exif).length > 0) formData.append("exif", JSON.stringify(exif));
 
     let id = queue.length;
@@ -75,6 +92,7 @@
   const handlePrevImage = () => {
     if (currImg <= 0) return;
     currImg--;
+    updateNewDate();
     orientation = null;
     inputPreset = "";
   };
@@ -82,8 +100,20 @@
   const handleNextImage = () => {
     if (currImg + 1 === images.length) return alert("You've reached the end.");
     currImg++;
+    updateNewDate();
     orientation = null;
     inputPreset = "";
+  };
+
+  const updateNewDate = () => {
+    newDate = {
+      year: images[currImg].date.format("YYYY"),
+      month: images[currImg].date.format("MM"),
+      day: images[currImg].date.format("DD"),
+      hour: images[currImg].date.format("HH"),
+      minute: images[currImg].date.format("mm"),
+      second: images[currImg].date.format("ss"),
+    };
   };
 
   const getClassOrieBtn = (x, y) => {
@@ -117,6 +147,25 @@
       <button on:click={handlePrevImage}> <Prev /> </button>
       <button on:click={handleNextImage}> <Next /> </button>
     </div>
+    {#if images[currImg].date.isValid()}
+      <div class="flex flex-col justify-center items-center w-full">
+        <p>{images[currImg].date.format("MMM D, YYYY - dddd")}</p>
+        <p>{images[currImg].date.format("HH:mm:ss")}</p>
+      </div>
+    {:else}
+      <p class="text-center">No Date</p>
+    {/if}
+    <div>
+      <input type="number" bind:value={newDate.year} min="1970" max="2025" />
+      <input type="number" bind:value={newDate.month} min="1" max="12" />
+      <input type="number" bind:value={newDate.day} min="1" max="31" />
+    </div>
+    <div>
+      <input type="number" bind:value={newDate.hour} min="0" max="23" />
+      <input type="number" bind:value={newDate.minute} min="0" max="59" />
+      <input type="number" bind:value={newDate.second} min="0" max="59" />
+    </div>
+
     <div class="flex flex-col gap-1 overflow-y-auto">
       {#each queue.toReversed() as item (item.id)}
         <div class="flex flex-row justify-between items-center gap-2 bg-neutral-700 rounded shadow px-2 py-1" in:fly={{ y: -100, duration: 150 }}>

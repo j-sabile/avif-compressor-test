@@ -1,0 +1,15 @@
+-DateTimeOriginal   = "2023:04:15 12:34:56"
+-CreateDate         = "2023:04:15 12:34:56"
+-OffsetTime         = "+02:00"
+-OffsetTimeOriginal = "+02:00"
+
+-ExposureTime   = 0.01
+-FNumber        = 5.6
+-ISOSpeedRatings= 100
+-Lens           = "Canon EF 50mm f/1.8 STM"
+-Make           = "Canon"
+-Model          = "Canon EOS 5D Mark IV"
+-LensInfo       = "50mm f/1.8"
+-Flash          = Off
+-Orientation    = Rotate 90 CW
+-Copyright      = "© 2023 John Doe"

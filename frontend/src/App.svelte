@@ -4,6 +4,7 @@
   import Slider from "./components/Slider.svelte";
   import SingleCompress from "./components/SingleCompress.svelte";
   import Modal from "./components/Modal.svelte";
+  import moment from "moment";
 
   let images = [];
   let quality = "40";
@@ -138,6 +139,16 @@
       body: formData,
     });
   };
+
+  const handleSingleCompressClick = async () => {
+    const formData = new FormData();
+    images.forEach((img) => formData.append("img", img));
+    const res = await fetch(`${API}/exif`, { method: "POST", body: formData });
+    const data = await res.json();
+    images.forEach((img, ind) => (img.date = moment(data.exifs[ind]["Date/Time Original"], "YYYY:MM:DD HH:mm:ss.SSSZ")));
+    console.log(images);
+    isSingleCompress = true;
+  };
 </script>
 
 {#if isSingleCompress}
@@ -153,7 +164,7 @@
           <button on:click={handleCompress} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing || !connected ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0 || isCompressing || !connected}
             >{isCompressing ? `Compressing...` : "Compress"}</button
           >
-          <button on:click={() => (isSingleCompress = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button>
+          <button on:click={handleSingleCompressClick} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button>
           <button on:click={handleDontCompress} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Don't Compress</button>
           <!-- <button on:click={() => (isSingleCompress = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0}>Single Compress</button> -->
         </div>

@@ -6,11 +6,12 @@ const orientationMap = { "Horizontal (normal)": 0, "Rotate 90 CW": 1, "Rotate 18
 const orientationArray = Object.keys(orientationMap);
 
 const exif = async (source, exif) => {
-  const { brand, model, orientation } = exif;
+  const { brand, model, orientation, newDate } = exif;
 
   let command = `ex.exe "${source}"`;
   if (brand) command += ` -Make="${brand}"`;
   if (model) command += ` -Model="${model}"`;
+  if (newDate) command += ` -DateTimeOriginal="${newDate}" -CreateDate="${newDate}" -OffsetTime="+08:00" -OffsetTimeOriginal="+08:00"`;
 
   try {
     if (orientation) {
