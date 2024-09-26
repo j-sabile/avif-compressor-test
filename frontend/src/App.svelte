@@ -145,7 +145,10 @@
     images.forEach((img) => formData.append("img", img));
     const res = await fetch(`${API}/exif`, { method: "POST", body: formData });
     const data = await res.json();
-    images.forEach((img, ind) => (img.date = moment(data.exifs[ind]["Date/Time Original"], "YYYY:MM:DD HH:mm:ss.SSSZ")));
+    images.forEach((img, ind) => {
+      img.date = moment(data.exifs[ind]["Date/Time Original"], "YYYY:MM:DD HH:mm:ss.SSSZ");
+      img.orientation = data.exifs[ind]["Orientation"];
+    });
     console.log(images);
     isSingleCompress = true;
   };

@@ -21,7 +21,7 @@
   let currImg = 0;
   let inputPreset = "";
   let effort = 6;
-  let orientation = null;
+  let orientationOffset = null;
   let newDate = {
     year: images[0].date.format("YYYY"),
     month: images[0].date.format("MM"),
@@ -29,6 +29,17 @@
     hour: images[0].date.format("HH"),
     minute: images[0].date.format("mm"),
     second: images[0].date.format("ss"),
+  };
+
+  const getOrientation = () => {
+    if (orientationOffset === "mirror") return "Mirror horizontal";
+
+    const curOrie = images[currImg].orientation;
+    const orientationMap = { "Horizontal (normal)": 0, "Rotate 90 CW": 1, "Rotate 180": 2, "Rotate 270 CW": 3 };
+    const orientationArray = Object.keys(orientationMap);
+    const currentIndex = orientationMap[curOrie];
+    const newIndex = (currentIndex + orientationOffset + 4) % 4;
+    return orientationArray[newIndex];
   };
 
   const getNewDate = () => {
@@ -61,7 +72,7 @@
     let exif: { brand?: string; model?: string; orientation?: string; newDate?: string } = {};
     if (brand) exif.brand = brand;
     if (model) exif.model = model;
-    if (orientation) exif.orientation = orientation;
+    if (orientationOffset) exif.orientation = getOrientation();
     if (moment(getNewDate()).isValid() && images[currImg].date.format("YYYY-MM-DD HH:mm:ss") !== `${getNewDate()}`) exif.newDate = `${getNewDate()}.000+08:00`;
     if (Object.keys(exif).length > 0) formData.append("exif", JSON.stringify(exif));
 
@@ -138,10 +149,10 @@
     </form>
     <Slider title="Effort" min="0" max="9" bind:value={effort} />
     <div class="flex flex-row justify-center gap-2 w-full">
-      <button class={getClassOrieBtn(-1, orientation)} on:click={() => (orientation = -1)}><RotateCcw size="28px" /></button>
-      <button class={getClassOrieBtn(2, orientation)} on:click={() => (orientation = 2)}>180 </button>
-      <button class={getClassOrieBtn(1, orientation)} on:click={() => (orientation = 1)}><RotateCw size="28px" /></button>
-      <button class={getClassOrieBtn("mirror", orientation)} on:click={() => (orientation = "mirror")}><MirrorHorizontally size="28px" /></button>
+      <button class={getClassOrieBtn(-1, orientationOffset)} on:click={() => (orientationOffset = -1)}><RotateCcw size="28px" /></button>
+      <button class={getClassOrieBtn(2, orientationOffset)} on:click={() => (orientationOffset = 2)}>180 </button>
+      <button class={getClassOrieBtn(1, orientationOffset)} on:click={() => (orientationOffset = 1)}><RotateCw size="28px" /></button>
+      <button class={getClassOrieBtn("mirror", orientationOffset)} on:click={() => (orientationOffset = "mirror")}><MirrorHorizontally size="28px" /></button>
     </div>
     <div class="flex flex-row justify-center gap-2 w-full">
       <button on:click={handlePrevImage}> <Prev /> </button>
