@@ -1,0 +1,35 @@
+
+Photosphere
+
+-ProjectionType=equirectangular -UsePanoramaViewer=True
+
+-PoseHeadingDegrees=180.0
+orientation of the camera when the image was captured
+
+-FullPanoWidthPixels=8000 -FullPanoHeightPixels=4000
+original uncropped dimensions of the 360-degree image
+
+-CroppedAreaImageWidthPixels=8000 -CroppedAreaImageHeightPixels=4000
+image size
+
+-CroppedAreaLeftPixels=0 -CroppedAreaTopPixels=0
+(Full-Crop)/2
+
+500	6000
+2880	6844
+1000	
+4330	12844
+
+ex.exe -ProjectionType=equirectangular -UsePanoramaViewer=True -PoseHeadingDegrees=180.0 -FullPanoWidthPixels=12844 -FullPanoHeightPixels=4330 -CroppedAreaImageWidthPixels=6844 -CroppedAreaImageHeightPixels=2880 -CroppedAreaLeftPixels=3500 -CroppedAreaTopPixels=500
+
+===================================
+
+
+
+
+
+
+===================================
+
+Location
+

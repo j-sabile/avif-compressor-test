@@ -14,7 +14,7 @@ const processImages = async (req, res) => {
   const results = await Promise.all(
     images.map(async (img) => {
       const { newSize, dest } = await compress(img, newFileName, effort, quality, resolution);
-      if (exifData) await exif(dest, exifData);
+      await exif(dest, exifData);
       return { originalSize: img.size, newSize };
     })
   );
