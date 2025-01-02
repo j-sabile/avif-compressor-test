@@ -1,12 +1,13 @@
-<script>
+<script setup lang="ts">
   import { ALLOWED_FORMATS, API, IMG_PATTERNS, SS_PATTERNS } from "./constants";
   import { io } from "socket.io-client";
   import Slider from "./components/Slider.svelte";
   import SingleCompress from "./components/SingleCompress.svelte";
   import Modal from "./components/Modal.svelte";
-  import moment from "moment";
+  import { images as imagesStore } from "./stores/images";
+  import type { IImage } from "./interfaces/IImage";
 
-  let images = [];
+  let images: IImage[] = [];
   let quality = "40";
   let effort = "6";
   let resolution = "1080";
@@ -18,6 +19,7 @@
   let brand = "";
   let model = "";
 
+  imagesStore.subscribe((i) => (images = i.images));
   // const socket = io(API);
   // socket.on("compressed", (t) => console.log(t + " received"));
   // socket.on("connect", () => (connected = true));
@@ -57,16 +59,8 @@
   const handleDragOver = (e) => e.preventDefault();
   const handleDrop = (e) => {
     e.preventDefault();
-
-    const fileList = e.dataTransfer.files;
-    for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i];
-      const extension = file.name.split(".").pop().toLowerCase();
-
-      if (ALLOWED_FORMATS.includes(extension)) {
-        images = [...images, file];
-      }
-    }
+    const fileList = Array.from(e.dataTransfer.files) as IImage[];
+    imagesStore.addImages(fileList);
   };
 
   const handleDownload = async () => {
@@ -95,12 +89,7 @@
   };
 
   const handleRename = () => {
-    const newFileNames = new Set();
-    for (let [_, img] of images.entries()) {
-      img.newName = rename(img.name.slice(0, img.name.lastIndexOf(".")));
-      img.extension = img.name.slice(img.name.lastIndexOf(".") + 1);
-    }
-    images = images;
+    imagesStore.renameAll();
   };
 
   const rename = (filename) => {
@@ -141,15 +130,7 @@
   };
 
   const handleSingleCompressClick = async () => {
-    const formData = new FormData();
-    images.forEach((img) => formData.append("img", img));
-    const res = await fetch(`${API}/exif`, { method: "POST", body: formData });
-    const data = await res.json();
-    images.forEach((img, ind) => {
-      img.date = moment(data.exifs[ind]["Date/Time Original"], "YYYY:MM:DD HH:mm:ss.SSSZ");
-      img.orientation = data.exifs[ind]["Orientation"];
-    });
-    console.log(images);
+    await imagesStore.generateExif();
     isSingleCompress = true;
   };
 </script>
@@ -191,6 +172,7 @@
         <button class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} on:click={handleSortClick} disabled={images.length === 0}>SORT</button>
         <button class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} on:click={handleRename} disabled={images.length === 0}>RENAME</button>
         <button on:click={() => (showModal = true)} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`} disabled={images.length === 0 || isCompressing}>Batch EXIF</button>
+        <button on:click={() => imagesStore.generateDates()} class="bg-neutral-900 rounded-lg shadow px-5 py-2">GENERATE DATE</button>
         {#if canDownload}
           <button on:click={handleDownload} class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 ? "brightness-75" : "hover:brightness-90"}`}>Download</button>
         {/if}

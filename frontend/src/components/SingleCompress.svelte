@@ -16,6 +16,10 @@
   import RotateCw from "../svg/RotateCW.svelte";
   import MirrorHorizontally from "../svg/MirrorHorizontally.svelte";
   import moment from "moment";
+  import Map from "./Map.svelte";
+  import DebugButton from "./DebugButton.svelte";
+  import { images as imagesStore, currImg as currentImage } from "../stores/images";
+  import Sidebar from "./Sidebar.svelte";
 
   let queue = [];
   let currImg = 0;
@@ -96,15 +100,16 @@
 
   const onKeyDown = (e) => {
     if (!e.ctrlKey || e.key === "Control") return;
-    if (e.key === "ArrowRight") handleNextImage();
-    else if (e.key === "ArrowLeft") handlePrevImage();
+    if (e.key === "ArrowRight") imagesStore.next();
+    else if (e.key === "ArrowLeft") imagesStore.prev();
   };
 
   const handlePrevImage = () => {
     if (currImg <= 0) return;
     currImg--;
     updateNewDate();
-    orientation = null;
+    imagesStore.prev();
+    orientationOffset = null;
     inputPreset = "";
   };
 
@@ -112,7 +117,8 @@
     if (currImg + 1 === images.length) return alert("You've reached the end.");
     currImg++;
     updateNewDate();
-    orientation = null;
+    imagesStore.next();
+    orientationOffset = null;
     inputPreset = "";
   };
 
@@ -135,18 +141,20 @@
 <main class="flex flex-row h-[100dvh]">
   <div class="flex flex-col justify-center items-center flex-grow">
     <div class="flex flex-row justify-between gap-4 w-full p-2">
-      <p>{`${(images[currImg].size / 1024 ** 2).toFixed(2)}MB`}</p>
-      <p>{images[currImg].newName ?? images[currImg].name}</p>
+      <p>{`${($currentImage.size / 1024 ** 2).toFixed(2)}MB`}</p>
+      <p>{$currentImage.newName ?? $currentImage.name}</p>
       <p>{`${currImg + 1}/${images.length}`}</p>
     </div>
-    <img src={URL.createObjectURL(images[currImg])} alt={`image${currImg + 1}`} class="flex-grow object-contain overflow-hidden" />
+    <img src={URL.createObjectURL($currentImage)} alt={`image${currImg + 1}`} class="flex-grow object-contain overflow-hidden" />
   </div>
 
-  <section class="flex flex-col gap-4 p-2 min-w-[250px]">
+  <Sidebar />
+  <!-- <section class="flex flex-col gap-4 p-2 min-w-[250px]">
     <form class="flex flex-col" on:submit={handleEnterPreset}>
       <label for="preset">Preset</label>
       <input class="text-white rounded outline-none ps-1" type="text" placeholder="Enter preset" bind:value={inputPreset} id="preset" />
     </form>
+    <DebugButton />
     <Slider title="Effort" min="0" max="9" bind:value={effort} />
     <div class="flex flex-row justify-center gap-2 w-full">
       <button class={getClassOrieBtn(-1, orientationOffset)} on:click={() => (orientationOffset = -1)}><RotateCcw size="28px" /></button>
@@ -158,10 +166,10 @@
       <button on:click={handlePrevImage}> <Prev /> </button>
       <button on:click={handleNextImage}> <Next /> </button>
     </div>
-    {#if images[currImg].date.isValid()}
+    {#if $currentImage.date.isValid()}
       <div class="flex flex-col justify-center items-center w-full">
-        <p>{images[currImg].date.format("MMM D, YYYY - dddd")}</p>
-        <p>{images[currImg].date.format("HH:mm:ss")}</p>
+        <p>{$currentImage.date.format("MMM D, YYYY - dddd")}</p>
+        <p>{$currentImage.date.format("HH:mm:ss")}</p>
       </div>
     {:else}
       <p class="text-center">No Date</p>
@@ -176,6 +184,7 @@
       <input type="number" bind:value={newDate.minute} min="0" max="59" />
       <input type="number" bind:value={newDate.second} min="0" max="59" />
     </div>
+    <Map />
 
     <div class="flex flex-col gap-1 overflow-y-auto">
       {#each queue.toReversed() as item (item.id)}
@@ -200,7 +209,7 @@
         </div>
       {/each}
     </div>
-  </section>
+  </section> -->
 </main>
 
 <svelte:window on:keydown={onKeyDown} />

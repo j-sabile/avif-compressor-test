@@ -6,15 +6,22 @@ const exec = promisify(execCallback);
 const exif = async (source, exif) => {
   let command = `ex.exe "${source}"`;
 
-  if (exif ){
-    const { brand, model, orientation, newDate } = exif;
-    if (brand) command += ` -Make="${brand}"`;
+  if (exif) {
+    const { make, model, orientation, date, lat, lng, aperture, iso, fLength, shutter } = exif;
+    if (make) command += ` -Make="${make}"`;
     if (model) command += ` -Model="${model}"`;
-    if (newDate) command += ` -DateTimeOriginal="${newDate}" -CreateDate="${newDate}" -OffsetTime="+08:00" -OffsetTimeOriginal="+08:00"`;
+    if (date) command += ` -DateTimeOriginal="${date}" -CreateDate="${date}" -OffsetTime="+08:00" -OffsetTimeOriginal="+08:00"`;
     if (orientation) command += ` -Orientation="${orientation}"`;
+    if (lat && lng) command += ` -GPSLatitude=${lat} -GPSLongitude=${lng} -GPSLatitudeRef=${lat > 0 ? "N" : "S"} -GPSLongitudeRef=${lng > 0 ? "E" : "W"} -GPSAltitude=0 -GPSAltitudeRef=0`; // TODO: investigate DateTime (-GPSDateTime="2024:09:25 22:56:29Z")
+    if (aperture) command += ` -Aperture=1.8 -FNumber=1.8 -ApertureValue=1.8`;
+    if (iso) command += ` -ISO=${iso}`;
+    if (fLength) command += ` -FocalLength="${fLength} mm"`;
+    if (shutter) command += ` -ExposureTime="${shutter}" -ShutterSpeedValue="${shutter}" -ShutterSpeed="${shutter}"`;
   }
+
+  command += ` -ThumbnailImage= -ImageDescription= -m -overwrite_original`;
+  // console.log(command);
   
-  command += ` -ThumbnailImage= -m -overwrite_original`;
   try {
     const { stdout } = await exec(command);
     if (stdout) console.log(stdout.trim());

@@ -1,0 +1,25 @@
+import { IMG_PATTERNS, SS_PATTERNS } from "../constants.js";
+
+const rename = (filename) => {
+  for (let [_, pattern] of IMG_PATTERNS.entries()) {
+    if (!pattern.test(filename)) continue;
+    const [, year, month, day, hour, minute, second, millisecond] = filename.match(pattern);
+    const newFileName = `IMG_${year}${month}${day}_${hour}${minute}${second}${millisecond}`;
+    const n = 22 - newFileName.length;
+    if (n == 0) return newFileName;
+    else if (n < 0) return newFileName.slice(0, n);
+    return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString()).padStart(n, "0");
+  }
+  for (let [_, pattern] of SS_PATTERNS.entries()) {
+    if (!pattern.test(filename)) continue;
+    const [, year, month, day, hour, minute, second, millisecond] = filename.match(pattern);
+    const newFileName = `Screenshot_${year}${month}${day}_${hour}${minute}${second}${millisecond}`;
+    const n = 29 - newFileName.length;
+    if (n == 0) return newFileName;
+    else if (n < 0) return newFileName.slice(0, n);
+    return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString()).padStart(n, "0");
+  }
+  return filename;
+};
+
+export default rename;

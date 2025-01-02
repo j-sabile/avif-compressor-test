@@ -1,4 +1,6 @@
 <script>
+  import { images } from "../stores/images";
+
   export let showModal; // boolean
 
   let dialog; // HTMLDialogElement
@@ -11,6 +13,7 @@
   const handleEdit = async (e) => {
     e.stopPropagation();
     dialog.close();
+    images.changeAllMakeModel(brand, model);
   };
 </script>
 

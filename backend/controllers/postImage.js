@@ -1,8 +1,10 @@
 import sharp from "sharp";
 import { exec } from "child_process";
-import compress from "../services/compress.js";
 import exif from "../services/exif.js";
+import compressLibAvif from "../services/compressLibAvif.js";
+import compress from "../services/compress.js";
 
+// CURRENT 
 const processImages = async (req, res) => {
   const images = req.files;
   const quality = parseInt(req.body.quality);
@@ -10,17 +12,21 @@ const processImages = async (req, res) => {
   const resolution = parseInt(req.body.resolution);
   const newFileName = req.body.newFileName;
   const exifData = req.body.exif ? JSON.parse(req.body.exif) : null;
+  const exifs = req.body.exifs ? JSON.parse(req.body.exifs) : null;
+  // console.log(effort, quality, resolution, images);
 
   const results = await Promise.all(
-    images.map(async (img) => {
-      const { newSize, dest } = await compress(img, newFileName, effort, quality, resolution);
-      await exif(dest, exifData);
+    images.map(async (img, ind) => {
+      // await compressLibAvif(img, exifs[ind].name, effort, quality, resolution);
+      const { newSize, dest } = await compress(img, exifs[ind].name, effort, quality, resolution);
+      await exif(dest, exifs[ind]);
       return { originalSize: img.size, newSize };
     })
   );
   return res.status(200).json({ message: "Success", results });
 };
 
+// OLD, NOT BEING USED
 const compressImageCopy = async (req, res) => {
   const images = req.files;
   const quality = parseInt(req.body.quality);

@@ -1,3 +1,9 @@
+TODO:
+[ ] location
+[ ] photosphere
+[ ] update avif
+
+===================================
 
 Photosphere
 
@@ -33,3 +39,25 @@ ex.exe -ProjectionType=equirectangular -UsePanoramaViewer=True -PoseHeadingDegre
 
 Location
 
+===================================
+image
+
+quality, effort, res, filename
+
+exif
+- date
+- location
+- make, model
+- orientation
+
+
+POST
+
+
+{
+image,
+quality,
+effort,
+resolution
+exif = date, location, make, model, orientation
+}
