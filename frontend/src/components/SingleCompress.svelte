@@ -102,6 +102,10 @@
     if (!e.ctrlKey || e.key === "Control") return;
     if (e.key === "ArrowRight") imagesStore.next();
     else if (e.key === "ArrowLeft") imagesStore.prev();
+    else if (e.key === "f") {
+      e.preventDefault();
+      imagesStore.flipImage();
+    }
   };
 
   const handlePrevImage = () => {
@@ -149,67 +153,6 @@
   </div>
 
   <Sidebar />
-  <!-- <section class="flex flex-col gap-4 p-2 min-w-[250px]">
-    <form class="flex flex-col" on:submit={handleEnterPreset}>
-      <label for="preset">Preset</label>
-      <input class="text-white rounded outline-none ps-1" type="text" placeholder="Enter preset" bind:value={inputPreset} id="preset" />
-    </form>
-    <DebugButton />
-    <Slider title="Effort" min="0" max="9" bind:value={effort} />
-    <div class="flex flex-row justify-center gap-2 w-full">
-      <button class={getClassOrieBtn(-1, orientationOffset)} on:click={() => (orientationOffset = -1)}><RotateCcw size="28px" /></button>
-      <button class={getClassOrieBtn(2, orientationOffset)} on:click={() => (orientationOffset = 2)}>180 </button>
-      <button class={getClassOrieBtn(1, orientationOffset)} on:click={() => (orientationOffset = 1)}><RotateCw size="28px" /></button>
-      <button class={getClassOrieBtn("mirror", orientationOffset)} on:click={() => (orientationOffset = "mirror")}><MirrorHorizontally size="28px" /></button>
-    </div>
-    <div class="flex flex-row justify-center gap-2 w-full">
-      <button on:click={handlePrevImage}> <Prev /> </button>
-      <button on:click={handleNextImage}> <Next /> </button>
-    </div>
-    {#if $currentImage.date.isValid()}
-      <div class="flex flex-col justify-center items-center w-full">
-        <p>{$currentImage.date.format("MMM D, YYYY - dddd")}</p>
-        <p>{$currentImage.date.format("HH:mm:ss")}</p>
-      </div>
-    {:else}
-      <p class="text-center">No Date</p>
-    {/if}
-    <div>
-      <input type="number" bind:value={newDate.year} min="1970" max="2025" />
-      <input type="number" bind:value={newDate.month} min="1" max="12" />
-      <input type="number" bind:value={newDate.day} min="1" max="31" />
-    </div>
-    <div>
-      <input type="number" bind:value={newDate.hour} min="0" max="23" />
-      <input type="number" bind:value={newDate.minute} min="0" max="59" />
-      <input type="number" bind:value={newDate.second} min="0" max="59" />
-    </div>
-    <Map />
-
-    <div class="flex flex-col gap-1 overflow-y-auto">
-      {#each queue.toReversed() as item (item.id)}
-        <div class="flex flex-row justify-between items-center gap-2 bg-neutral-700 rounded shadow px-2 py-1" in:fly={{ y: -100, duration: 150 }}>
-          <div class="flex flex-col justify-center items-center text-xs font-thin italic">
-            <p>{item.res}p</p>
-            <p>{item.quality}</p>
-          </div>
-          <div class="flex flex-col">
-            <h6>
-              {item.fileName.length > 15 ? item.fileName.slice(0, 8) + "..." + item.fileName.slice(item.fileName.length - 6) : item.fileName}
-            </h6>
-            <p class="text-sm text-center">
-              {`${item.newSize ? (item.originalSize / 1024 ** 2).toFixed(2) + "MB - " + (item.newSize / 1024 ** 2).toFixed(2) + "MB" : " - "}`}
-            </p>
-          </div>
-          {#if item.isProcessing}
-            <Spinner />
-          {:else}
-            <div class="font-bold text-green-500">✓</div>
-          {/if}
-        </div>
-      {/each}
-    </div>
-  </section> -->
 </main>
 
 <svelte:window on:keydown={onKeyDown} />

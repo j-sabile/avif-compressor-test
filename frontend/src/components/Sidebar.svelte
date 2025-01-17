@@ -19,6 +19,10 @@
   import type { IImage } from "../interfaces/IImage";
   import MySpinner from "./MySpinner.svelte";
 
+  onbeforeunload = () => {
+    if (isRequestInProgress) return "";
+  };
+
   interface IImageJSON extends IImage, File {
     exif?: {
       make?: string;
@@ -72,22 +76,34 @@
     formData.append("img", image);
     formData.append("exifs", JSON.stringify(exifs));
 
-    // let id = queue.length;
-    // queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true, res: data[0], quality: data[1], id: uuidv4() }];
-    fetch(`${API}/image`, { method: "POST", body: formData }).then(async (res) => {
-      // if (res.status === 200) {
-      //   queue[id].isProcessing = false;
-      //   const data = (await res.json()).results[0];
-      //   queue[id].originalSize = data.originalSize;
-      //   queue[id].newSize = data.newSize;
-      // } else {
-      //   queue[id].isProcessing = false;
-      //   const data = (await res.json()).results[0];
-      //   queue[id].originalSize = data.originalSize;
-      //   queue[id].newSize = "ERROR";
-      // }
-    });
+    makeRequest(formData);
   };
+
+  let isRequestInProgress = false;
+  let requestQueue = [];
+
+  async function makeRequest(data) {
+    if (isRequestInProgress) {
+      requestQueue.push(data);
+      return;
+    }
+
+    isRequestInProgress = true;
+    try {
+      const response = await fetch(`${API}/image`, { method: "POST", body: data });
+      if (!response.ok) throw new Error("Network response was not ok");
+      const result = await response.json();
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      isRequestInProgress = false;
+
+      if (requestQueue.length > 0) {
+        const nextData = requestQueue.shift();
+        makeRequest(nextData);
+      }
+    }
+  }
 
   const getResAndQual = (): undefined | [string, string] => {
     const selectedPreset = presets[inputPreset];
@@ -99,52 +115,14 @@
 
   const handleEnterPreset = (e) => {
     e.preventDefault();
-    const data = getResAndQual();    
+    const data = getResAndQual();
     if (data) {
       handleCompress(data[0], data[1], effort);
       images.next();
-    } else {
-      alert("Incorrect preset");
-    }
+    } else alert("Incorrect preset");
+
     inputPreset = "";
   };
-
-  // const handleEnterPreset = (e) => {
-  //   const formData = new FormData();
-
-  //   const data = getResAndQual();
-  //   if (data === undefined) return alert("Invalid Input!");
-
-  //   formData.append("resolution", data[0]);
-  //   formData.append("quality", data[1]);
-  //   formData.append("effort", String(effort));
-  //   formData.append("img", images[currImg]);
-  //   if (images[currImg].newName) formData.append("newFileName", images[currImg].newName);
-
-  //   let exif: { brand?: string; model?: string; orientation?: string; newDate?: string } = {};
-  //   if (brand) exif.brand = brand;
-  //   if (model) exif.model = model;
-  //   if (orientationOffset) exif.orientation = getOrientation();
-  //   if (moment(getNewDate()).isValid() && images[currImg].date.format("YYYY-MM-DD HH:mm:ss") !== `${getNewDate()}`) exif.newDate = `${getNewDate()}.000+08:00`;
-  //   if (Object.keys(exif).length > 0) formData.append("exif", JSON.stringify(exif));
-
-  //   let id = queue.length;
-  //   queue = [...queue, { fileName: images[currImg].newName ?? images[currImg].name.split(".")[0], isProcessing: true, res: data[0], quality: data[1], id: uuidv4() }];
-  //   fetch(`${API}/image`, { method: "POST", body: formData }).then(async (res) => {
-  //     if (res.status === 200) {
-  //       queue[id].isProcessing = false;
-  //       const data = (await res.json()).results[0];
-  //       queue[id].originalSize = data.originalSize;
-  //       queue[id].newSize = data.newSize;
-  //     } else {
-  //       queue[id].isProcessing = false;
-  //       const data = (await res.json()).results[0];
-  //       queue[id].originalSize = data.originalSize;
-  //       queue[id].newSize = "ERROR";
-  //     }
-  //   });
-  //   handleNextImage();
-  // };
 </script>
 
 <section class="flex flex-col bg-[#111] min-w-[375px] p-4 flex-grow">

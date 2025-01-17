@@ -2,6 +2,7 @@ import { promisify } from "util";
 import { exec as execCallback } from "child_process";
 import path from "path";
 import fs from "fs";
+import ExifReader from "exifreader";
 
 const exec = promisify(execCallback);
 
@@ -11,35 +12,29 @@ const getExif = async (req, res) => {
 
   const exifs = [];
   for (const img of images) {
-    const filePath = path.join(tempDir, img.originalname);
-    await fs.promises.writeFile(filePath, img.buffer);
-
-    try {
-      const { stdout } = await exec(`ex.exe "${filePath}"`);
-      const exifDataForImage = parseExifOutput(stdout);
-      exifs.push(exifDataForImage);
-    } catch (error) {
-      console.error(`Error processing image: ${error.message}`);
-    } finally {
-      await fs.promises.unlink(filePath);
-    }
+    const exifReaderOutput = ExifReader.load(img.buffer);
+    const parsedExifData = parseExifReaderOutput(exifReaderOutput);
+    exifs.push(parsedExifData);
   }
 
   res.status(200).json({ message: "Success", exifs });
 };
 
-function parseExifOutput(output) {
-  const lines = output.split("\n");
-  const exifData = {};
-  for (const line of lines) {
-    const colonIndex = line.indexOf(":");
-    if (colonIndex !== -1) {
-      const key = line.slice(0, colonIndex).trim();
-      const value = line.slice(colonIndex + 1).trim();
-      exifData[key] = value;
-    }
-  }
-  return exifData;
+function parseExifReaderOutput(output) {
+  return {
+    height: output["Image Height"]?.value,
+    width: output["Image Width"]?.value,
+    make: output["Make"]?.description,
+    model: output["Model"]?.description,
+    dateTimeOriginal: output["DateTimeOriginal"]?.description,
+    aperture: output["ApertureValue"]?.description,
+    shutterSpeed: output["ShutterSpeedValue"]?.description,
+    ISO: output["ISOSpeedRatings"]?.description,
+    focalLength: (output["FocalLength"]?.value[0] / output["FocalLength"]?.value[1]).toFixed(2),
+    orientation: output["Orientation"]?.description,
+    gpsLatitude: output["GPSLatitude"]?.description,
+    gpsLongitude: output["GPSLongitude"]?.description,
+  };
 }
 
 export default getExif;

@@ -121,22 +121,22 @@ function createStore() {
       const data = await res.json();
       update((state) => {
         tempImages.forEach((img, ind) => {
-          img.height = data.exifs[ind]["Image Height"];
-          img.width = data.exifs[ind]["Image Width"];
-          img.make = data.exifs[ind]["Make"];
-          img.model = data.exifs[ind]["Camera Model Name"];
+          img.height = data.exifs[ind]["height"];
+          img.width = data.exifs[ind]["width"];
+          img.make = data.exifs[ind]["make"];
+          img.model = data.exifs[ind]["model"];
           img.newMake = img.newMake ?? img.make;
           img.newModel = img.newModel ?? img.model;
-          img.newAperture = img.aperture = data.exifs[ind]["Aperture"];
-          img.newShutterSpeed = img.shutterSpeed = data.exifs[ind]["Shutter Speed"];
+          img.newAperture = img.aperture = data.exifs[ind]["aperture"];
+          img.newShutterSpeed = img.shutterSpeed = data.exifs[ind]["shutterSpeed"];
           img.newIso = img.iso = Number(data.exifs[ind]["ISO"]);
-          img.newFLength = img.fLength = Number(data.exifs[ind]["Focal Length"]?.split(" ")[0]);
+          img.newFLength = img.fLength = Number(data.exifs[ind]["focalLength"]);
           // img.newDate = moment(img.newName.replace("IMG_", ""), "YYYYMMDD_HHmmssSSS");
-          img.date = moment(data.exifs[ind]["Date/Time Original"], "YYYY:MM:DD HH:mm:ss.SSSZ");
+          img.date = moment(data.exifs[ind]["dateTimeOriginal"], "YYYY:MM:DD HH:mm:ss.SSSZ");
           img.newDate = img.newDate ?? img.date;
-          img.newOrientation = img.orientation = data.exifs[ind]["Orientation"];
-          img.newLat = img.lat = convertCoordinate(data.exifs[ind]["GPS Latitude"]);
-          img.newLng = img.lng = convertCoordinate(data.exifs[ind]["GPS Longitude"]);
+          img.newOrientation = img.orientation = data.exifs[ind]["orientation"];
+          img.newLat = img.lat = data.exifs[ind]["gpsLatitude"];
+          img.newLng = img.lng = data.exifs[ind]["gpsLongitude"];
         });
         return { ...state, images: tempImages };
       });
@@ -167,6 +167,16 @@ function createStore() {
       update((state) => {
         let temp = { ...state };
         state.effort = effort;
+        return temp;
+      });
+    },
+    flipImage: () => {
+      update((state) => {
+        let temp = { ...state };
+        if (temp.images[temp.currImage].orientation === "bottom-left") temp.images[temp.currImage].newOrientation = "Rotate 180";
+        else if (temp.images[temp.currImage].orientation === "top-right") temp.images[temp.currImage].newOrientation = "Horizontal (normal)";
+        else if (temp.images[temp.currImage].orientation === "left-top") temp.images[temp.currImage].newOrientation = "Rotate 90";
+        else temp.images[temp.currImage].newOrientation = "Mirror horizontal";
         return temp;
       });
     },
