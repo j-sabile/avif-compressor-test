@@ -17,8 +17,6 @@
   import RotateCw from "../svg/RotateCW.svelte";
   import MirrorHorizontally from "../svg/MirrorHorizontally.svelte";
   import moment from "moment";
-  import Map from "./Map.svelte";
-  import DebugButton from "./DebugButton.svelte";
   import { images as imagesStore, currImg as currentImage } from "../stores/images";
   import Sidebar from "./Sidebar.svelte";
 

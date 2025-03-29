@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { ALLOWED_FORMATS, API, IMG_PATTERNS, SS_PATTERNS } from "./constants";
-  import { io } from "socket.io-client";
   import Slider from "./components/Slider.svelte";
   import SingleCompress from "./components/SingleCompress.svelte";
   import Modal from "./components/Modal.svelte";
