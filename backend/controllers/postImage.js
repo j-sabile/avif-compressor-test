@@ -1,10 +1,12 @@
 import sharp from "sharp";
+import fs from "fs";
 import { exec } from "child_process";
 import exif from "../services/exif.js";
 import compressLibAvif from "../services/compressLibAvif.js";
 import compress from "../services/compress.js";
+import path from "path";
 
-// CURRENT 
+// CURRENT
 const processImages = async (req, res) => {
   const images = req.files;
   const quality = parseInt(req.body.quality);
@@ -13,14 +15,21 @@ const processImages = async (req, res) => {
   const newFileName = req.body.newFileName;
   const exifData = req.body.exif ? JSON.parse(req.body.exif) : null;
   const exifs = req.body.exifs ? JSON.parse(req.body.exifs) : null;
+  const toCompress = req.body?.compress === "true";
   // console.log(effort, quality, resolution, images);
 
   const results = await Promise.all(
     images.map(async (img, ind) => {
-      // await compressLibAvif(img, exifs[ind].name, effort, quality, resolution);
-      const { newSize, dest } = await compress(img, exifs[ind].name, effort, quality, resolution);
-      await exif(dest, exifs[ind]);
-      return { originalSize: img.size, newSize };
+      if (toCompress) {
+        const { newSize, dest } = await compress(img, exifs[ind].name, effort, quality, resolution);
+        await exif(dest, exifs[ind]);
+        return { originalSize: img.size, newSize };
+      } else {
+        const dest = path.join("..", "Edited EXIFs", img.originalname);
+        await fs.promises.writeFile(dest, img.buffer);
+        await exif(dest, exifs[ind]);
+        return { originalSize: img.size, newSize: img.size };
+      }
     })
   );
   return res.status(200).json({ message: "Success", results });

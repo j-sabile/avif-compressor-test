@@ -19,6 +19,24 @@
   import type { IImage } from "../interfaces/IImage";
   import MySpinner from "./MySpinner.svelte";
 
+  import { onMount } from "svelte";
+
+  const keyboardListner = async (event) => {
+    if (event.ctrlKey && event.key === "Enter") {
+      console.log("Ctrl + Enter was pressed!");
+      await handleCompress();
+      images.next();
+    }
+  };
+
+  onMount(() => {
+    document.addEventListener("keydown", keyboardListner);
+
+    return () => {
+      document.removeEventListener("keydown", keyboardListner);
+    };
+  });
+
   onbeforeunload = () => {
     if (isRequestInProgress) return "";
   };
@@ -34,6 +52,7 @@
     };
   }
 
+  export let showEditImageOptions: boolean;
   let resolution = "1080",
     quality = "60",
     effort = "6",
@@ -51,7 +70,7 @@
     handleCompress(resolution, quality, effort);
   };
 
-  const handleCompress = async (paramRes: string, paramQual: string, paramEffort: string) => {
+  const handleCompress = async (paramRes?: string, paramQual?: string, paramEffort?: string) => {
     let image = $currImg as IImageJSON;
 
     const exifs = [];
@@ -70,11 +89,12 @@
     });
 
     const formData = new FormData();
-    formData.append("resolution", paramRes);
-    formData.append("quality", paramQual);
-    formData.append("effort", paramEffort);
+    if (paramRes) formData.append("resolution", paramRes);
+    if (paramQual) formData.append("quality", paramQual);
+    if (paramEffort) formData.append("effort", paramEffort);
     formData.append("img", image);
     formData.append("exifs", JSON.stringify(exifs));
+    formData.append("compress", showEditImageOptions.toString());
 
     makeRequest(formData);
   };
@@ -131,7 +151,12 @@
     <DebugButton />
     <ImagePropertyTile bind:show={showImageModal}>
       <span slot="title">{$currImg.newName}</span>
-      <span slot="subtitle">{(($currImg.height * $currImg.width) / 1000000).toFixed(1)}MP &nbsp; {$currImg.width} × {$currImg.height} &nbsp; {($currImg.size / 1024 ** 2).toFixed(2)}MB</span>
+      <span slot="subtitle"
+        >{(($currImg.height * $currImg.width) / 1000000).toFixed(1)}MP &nbsp; {$currImg.width} × {$currImg.height} &nbsp; {(
+          $currImg.size /
+          1024 ** 2
+        ).toFixed(2)}MB</span
+      >
       <Image size={30} slot="icon" color="#FFF" />
     </ImagePropertyTile>
     <ImagePropertyTile bind:show={showDateModal}>
@@ -141,7 +166,9 @@
     </ImagePropertyTile>
     <ImagePropertyTile bind:show={showCameraModal}>
       <span slot="title">{`${$currImg.newMake} ${$currImg.newModel}`}</span>
-      <span slot="subtitle">{`ƒ/${$currImg.newAperture}`} &nbsp; {$currImg.newShutterSpeed} &nbsp; {$currImg.newFLength}mm &nbsp; {`ISO${$currImg.newIso}`}</span>
+      <span slot="subtitle"
+        >{`ƒ/${$currImg.newAperture}`} &nbsp; {$currImg.newShutterSpeed} &nbsp; {$currImg.newFLength}mm &nbsp; {`ISO${$currImg.newIso}`}</span
+      >
       <Camera size={30} slot="icon" color="#FFF" />
     </ImagePropertyTile>
     <ImagePropertyTile bind:show={showLocationModal}>
@@ -153,29 +180,62 @@
       <Orientation size={30} slot="icon" color="#FFF" />
     </ImagePropertyTile>
   </div>
-  <div class="flex flex-col flex-grow justify-end">
-    <div class="flex flex-wrap gap-x-6 gap-y-2">
-      <div class="flex flex-row justify-center items-center gap-2">
-        <label for="quality">Quality: </label>
-        <input type="number" id="quality" bind:value={quality} class="text-center w-16 px-1 py-1 border-[#444] border rounded" placeholder="Quality" min="0" max="100" />
+  {#if showEditImageOptions}
+    <div class="flex flex-col flex-grow justify-end">
+      <div class="flex flex-wrap gap-x-6 gap-y-2">
+        <div class="flex flex-row justify-center items-center gap-2">
+          <label for="quality">Quality: </label>
+          <input
+            type="number"
+            id="quality"
+            bind:value={quality}
+            class="text-center w-16 px-1 py-1 border-[#444] border rounded"
+            placeholder="Quality"
+            min="0"
+            max="100"
+          />
+        </div>
+        <div class="flex flex-row justify-center items-center gap-2">
+          <label for="effort">Effort: </label>
+          <input
+            type="number"
+            id="effort"
+            bind:value={effort}
+            class="text-center w-16 px-1 py-1 border-[#444] border rounded"
+            placeholder="Effort"
+            min="0"
+            max="9"
+          />
+        </div>
+        <div class="flex flex-row justify-center items-center gap-2">
+          <label for="resolution">Resolution: </label>
+          <input
+            type="number"
+            id="resolution"
+            bind:value={resolution}
+            class="text-center w-20 px-1 py-1 border-[#444] border rounded"
+            placeholder="Resolution"
+            min="0"
+          />
+        </div>
       </div>
-      <div class="flex flex-row justify-center items-center gap-2">
-        <label for="effort">Effort: </label>
-        <input type="number" id="effort" bind:value={effort} class="text-center w-16 px-1 py-1 border-[#444] border rounded" placeholder="Effort" min="0" max="9" />
-      </div>
-      <div class="flex flex-row justify-center items-center gap-2">
-        <label for="resolution">Resolution: </label>
-        <input type="number" id="resolution" bind:value={resolution} class="text-center w-20 px-1 py-1 border-[#444] border rounded" placeholder="Resolution" min="0" />
+      <div class="flex justify-between w-full mt-4">
+        <form class="flex items-center gap-2" on:submit={handleEnterPreset}>
+          <label for="preset">Preset:</label>
+          <input type="text" id="preset" class="text-center w-20 px-1 py-1 border-[#444] border rounded" bind:value={inputPreset} />
+        </form>
+        <button on:click={handleCompressBtnClick} class="font-semibold text-xl bg-white text-black rounded px-[25px] py-[10px]"
+          >Compress<MySpinner /></button
+        >
       </div>
     </div>
-    <div class="flex justify-between w-full mt-4">
-      <form class="flex items-center gap-2" on:submit={handleEnterPreset}>
-        <label for="preset">Preset:</label>
-        <input type="text" id="preset" class="text-center w-20 px-1 py-1 border-[#444] border rounded" bind:value={inputPreset} />
-      </form>
-      <button on:click={handleCompressBtnClick} class="font-semibold text-xl bg-white text-black rounded px-[25px] py-[10px]">Compress<MySpinner /></button>
+  {:else}
+    <div class="flex flex-col flex-grow justify-end">
+      <button on:click={handleCompressBtnClick} class="font-semibold text-xl bg-white text-black rounded px-[25px] py-[10px]"
+        >Change EXIF<MySpinner />
+      </button>
     </div>
-  </div>
+  {/if}
 </section>
 
 <Modal bind:show={showImageModal} bind:dialog={imageDialog}>

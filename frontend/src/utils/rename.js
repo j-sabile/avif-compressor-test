@@ -19,6 +19,8 @@ const rename = (filename) => {
     else if (n < 0) return newFileName.slice(0, n);
     return newFileName + String(Math.floor(Math.random() * Math.pow(10, n)).toString()).padStart(n, "0");
   }
+  const fbPattern = /^\d{8}_\d{6} - (.*)/;
+  if (fbPattern.test(filename)) return filename.match(fbPattern)[1];
   return filename;
 };
 

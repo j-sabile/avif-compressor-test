@@ -6,6 +6,7 @@
   export let images;
   export let brand;
   export let model;
+  export let isInChangeEXIF: boolean;
 
   import presets from "../data/presets";
   import Slider from "./Slider.svelte";
@@ -147,12 +148,12 @@
     <div class="flex flex-row justify-between gap-4 w-full p-2">
       <p>{`${($currentImage.size / 1024 ** 2).toFixed(2)}MB`}</p>
       <p>{$currentImage.newName ?? $currentImage.name}</p>
-      <p>{`${currImg + 1}/${images.length}`}</p>
+      <p>{`${$imagesStore.currImage+1}/${$imagesStore.images.length}`}</p>
     </div>
     <img src={URL.createObjectURL($currentImage)} alt={`image${currImg + 1}`} class="flex-grow object-contain overflow-hidden" />
   </div>
 
-  <Sidebar />
+  <Sidebar showEditImageOptions={!isInChangeEXIF}/>
 </main>
 
 <svelte:window on:keydown={onKeyDown} />

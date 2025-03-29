@@ -3,6 +3,7 @@ import moment from "moment";
 const filenamePatterns = [
   { regex: /^Screenshot_(\d{8}_\d{9})/, format: "YYYYMMDD_HHmmssSSS" },
   { regex: /^JPEG_(\d{8}_\d{6})/, format: "YYYYMMDD_HHmmss" },
+  { regex: /^(\d{8}_\d{6})/, format: "YYYYMMDD_HHmmss"}
 ];
 
 const getDate = (filename) => {
