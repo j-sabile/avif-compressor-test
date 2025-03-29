@@ -18,15 +18,12 @@
   import { API } from "../constants";
   import type { IImage } from "../interfaces/IImage";
   import MySpinner from "./MySpinner.svelte";
-
   import { onMount } from "svelte";
 
   const keyboardListner = async (event) => {
-    if (event.ctrlKey && event.key === "Enter") {
-      console.log("Ctrl + Enter was pressed!");
-      await handleCompress();
-      images.next();
-    }
+    if (!event.ctrlKey || !(event.key === "Enter")) return
+    await handleCompress();
+    images.next();
   };
 
   onMount(() => {
