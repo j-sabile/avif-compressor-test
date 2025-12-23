@@ -146,6 +146,7 @@ function createStore() {
         let imgs = [...state.images];
         imgs.forEach((img) => (img.newDate = getDate(img.newName)));
         console.log("Generated dates!");
+        alert("Generated Dates!");
         return { ...state, images: imgs };
       });
     },

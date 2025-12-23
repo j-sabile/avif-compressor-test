@@ -8,10 +8,14 @@ export const IMG_PATTERNS = [
   /^00000PORTRAIT_00000_BURST(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d*)/,
   /^PANO_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(\d*)/,
 ];
-export const SS_PATTERNS = [/^Screenshot_(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d*)((_[a-z]+)(\.[a-z]+))*/];
+export const SS_PATTERNS = [
+  /^Screenshot_(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d*)_([a-zA-Z0-9\.]+)/,
+  /^Screenshot (\d{4})-(\d{2})-(\d{2}) (\d{2})(\d{2})(\d{2})/,
+];
+
 export const API = import.meta.env.VITE_API || "http://localhost:3000";
 
 export const RESOLUTION = "1080";
 export const QUALITY = "50";
 export const EFFORT = "0";
-export const NEWFILENAME = "test"
+export const NEWFILENAME = "test";

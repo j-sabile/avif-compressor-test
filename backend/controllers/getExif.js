@@ -26,7 +26,7 @@ function parseExifReaderOutput(output) {
     width: output["Image Width"]?.value,
     make: output["Make"]?.description,
     model: output["Model"]?.description,
-    dateTimeOriginal: output["DateTimeOriginal"]?.description,
+    dateTimeOriginal: output["DateTimeOriginal"]?.description || getMetadataDate(output["MetadataDate"]?.description),
     aperture: output["ApertureValue"]?.description,
     shutterSpeed: output["ShutterSpeedValue"]?.description,
     ISO: output["ISOSpeedRatings"]?.description,
@@ -35,6 +35,12 @@ function parseExifReaderOutput(output) {
     gpsLatitude: output["GPSLatitude"]?.description,
     gpsLongitude: output["GPSLongitude"]?.description,
   };
+}
+
+function getMetadataDate(inputString) {
+  if (!inputString) return undefined;
+  const dateObj = new Date(inputString);
+  return dateObj.toISOString().slice(0, 10).replace(/-/g, ':') + " " + dateObj.toTimeString().slice(0, 8);
 }
 
 export default getExif;

@@ -75,6 +75,7 @@
       name: image.newName,
       make: image.make === image.newMake ? undefined : image.newMake,
       model: image.model === image.newModel ? undefined : image.newModel,
+      // date: image.date.format("YYYY-MM-DDTHH:mm:ss.SSSZ"), // enable this if  
       date: image.date === image.newDate ? undefined : image.newDate.format("YYYY-MM-DDTHH:mm:ss.SSSZ"), // 2024-10-06T14:30:00.123+08:00
       lat: image.lat === image.newLat ? undefined : image.newLat,
       lng: image.lng === image.newLng ? undefined : image.newLng,

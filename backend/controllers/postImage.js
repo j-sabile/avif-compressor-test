@@ -21,9 +21,13 @@ const processImages = async (req, res) => {
   const results = await Promise.all(
     images.map(async (img, ind) => {
       if (toCompress) {
-        const { newSize, dest } = await compress(img, exifs[ind].name, effort, quality, resolution);
-        await exif(dest, exifs[ind]);
-        return { originalSize: img.size, newSize };
+        try {
+          const { newSize, dest } = await compress(img, exifs[ind].name, effort, quality, resolution);
+          await exif(dest, exifs[ind]);
+          return { originalSize: img.size, newSize };
+        } catch {
+          return { originalSize: 0, newSize: 0};
+        }
       } else {
         const dest = path.join("..", "Edited EXIFs", img.originalname);
         await fs.promises.writeFile(dest, img.buffer);
