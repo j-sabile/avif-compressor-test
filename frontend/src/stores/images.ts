@@ -4,6 +4,7 @@ import type { IImage } from "../interfaces/IImage";
 import moment, { type Moment } from "moment";
 import rename from "../utils/rename";
 import getDate from "../utils/getDate";
+import autoChangeMakeModelAllImages from "../utils/autoChangeMakeModel";
 
 interface IImageStore {
   images: IImage[];
@@ -45,6 +46,15 @@ function createStore() {
         if (ALLOWED_FORMATS.includes(img.extension)) temp.push(img);
       });
       update((state) => ({ ...state, images: [...state.images, ...temp] }));
+    },
+    autoChangeMakeModel: async () => {
+      let currentState: IImageStore;
+      update((state) => {
+        currentState = state;
+        return state;
+      });
+      const updatedImages = await autoChangeMakeModelAllImages(currentState!.images);
+      update((state) => ({ ...state, images: updatedImages }));
     },
     renameAll: () => {
       // const newFileNames = new Set();

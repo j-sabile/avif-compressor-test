@@ -57,10 +57,11 @@
   };
 
   const handleDragOver = (e) => e.preventDefault();
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     const fileList = Array.from(e.dataTransfer.files) as IImage[];
     imagesStore.addImages(fileList);
+    await imagesStore.generateExif();
   };
 
   const handleDownload = async () => {
@@ -130,14 +131,16 @@
   };
 
   const handleSingleCompressClick = async () => {
-    await imagesStore.generateExif();
     isSingleCompress = true;
   };
 
   const handleChangeEXIFClick = async () => {
-    await imagesStore.generateExif();
     isInChangeEXIF = true;
   };
+
+  const handleAutoChangeMakeModel = async () => {
+    await imagesStore.autoChangeMakeModel();
+  }
 </script>
 
 {#if isSingleCompress || isInChangeEXIF}
@@ -205,6 +208,11 @@
           on:click={() => (showModal = true)}
           class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`}
           disabled={images.length === 0 || isCompressing}>Batch EXIF</button
+        >
+        <button
+          on:click={handleAutoChangeMakeModel}
+          class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`}
+          disabled={images.length === 0 || isCompressing}>Auto Change Make/Model</button
         >
         <button on:click={() => imagesStore.generateDates()} class="bg-neutral-900 rounded-lg shadow px-5 py-2">GENERATE DATE</button>
         {#if canDownload}
