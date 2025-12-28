@@ -1,6 +1,7 @@
 <script setup lang="ts">
   export let show: boolean;
   export let dialog;
+  export let presets;
   import { images, currImg } from "../../stores/images";
 
   let inputValue = {
@@ -36,6 +37,11 @@
   const handleInputChange = (event: Event, type: string) => {
     inputValue[type] = (event.target as HTMLInputElement).value;
   };
+
+  const handlePresetClick = (preset) => {
+    inputValue.make = preset.make;
+    inputValue.model = preset.model;  
+  };
 </script>
 
 <form class="flex flex-col justify-center items-center gap-6 p-4" on:submit={handleSave}>
@@ -48,7 +54,7 @@
     <div class="flex flex-row items-center gap-2 text-lg w-full">
       <label for="model" class="">Model:</label>
       <input type="text" id="model" value={inputValue.model} on:input={(e) => handleInputChange(e, "model")} class="w-36 px-4 py-1 border-[#DDD] border rounded" />
-  </div>
+    </div>
   </div>
   <div class="flex flex-row justify-between w-full">
     <div class="flex flex-row items-center gap-1 text-lg">
@@ -67,7 +73,13 @@
       <label for="iso" class="">ISO:</label>
       <input type="text" id="iso" value={inputValue.iso} on:input={(e) => handleInputChange(e, "iso")} class="w-16 text-center px-2 py-1 border-[#DDD] border rounded" />
     </div>
-
+  </div>
+  <div class="flex flex-row justify-end items-start gap-2 w-full">
+    {#each presets as preset}
+      <button type="button" class="px-6 py-2 rounded-lg border-[1px] hover:bg-neutral-800" on:click={() => handlePresetClick(preset)}>
+        {`${preset.make} ${preset.model}`}
+      </button>
+    {/each}
   </div>
   <div class="flex flex-row justify-end items-start gap-2 w-full">
     <button type="button" class="font-semibold text-lg px-6 py-2 rounded" on:click={handleCloseModal}>Cancel</button>

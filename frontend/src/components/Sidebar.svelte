@@ -14,11 +14,12 @@
   import DebugButton from "./DebugButton.svelte";
 
   import { currImg, images } from "../stores/images";
-  import presets from "../data/presets";
   import { API } from "../constants";
   import type { IImage } from "../interfaces/IImage";
   import MySpinner from "./MySpinner.svelte";
   import { onMount } from "svelte";
+
+  let presets;
 
   const keyboardListner = async (event) => {
     if (!event.ctrlKey || !(event.key === "Enter")) return
@@ -32,6 +33,15 @@
     return () => {
       document.removeEventListener("keydown", keyboardListner);
     };
+  });
+
+  onMount(async () => {
+    try {
+      const res = await fetch(`${API}/make-model-presets`);
+      presets = (await res.json()).presets;
+    } catch (e) {
+      alert(`Error: ${e}`);
+    }
   });
 
   onbeforeunload = () => {
@@ -75,7 +85,7 @@
       name: image.newName,
       make: image.make === image.newMake ? undefined : image.newMake,
       model: image.model === image.newModel ? undefined : image.newModel,
-      // date: image.date.format("YYYY-MM-DDTHH:mm:ss.SSSZ"), // enable this if  
+      // date: image.date.format("YYYY-MM-DDTHH:mm:ss.SSSZ"), // enable this if
       date: image.date === image.newDate ? undefined : image.newDate.format("YYYY-MM-DDTHH:mm:ss.SSSZ"), // 2024-10-06T14:30:00.123+08:00
       lat: image.lat === image.newLat ? undefined : image.newLat,
       lng: image.lng === image.newLng ? undefined : image.newLng,
@@ -243,7 +253,7 @@
   <DateModal bind:show={showDateModal} bind:dialog={dateDialog} />
 </Modal>
 <Modal bind:show={showCameraModal} bind:dialog={cameraDialog}>
-  <CameraModal bind:show={showCameraModal} bind:dialog={cameraDialog} />
+  <CameraModal bind:show={showCameraModal} bind:dialog={cameraDialog} presets={presets}/>
 </Modal>
 <Modal bind:show={showLocationModal} bind:dialog={locationDialog}>
   <LocationModal bind:show={showLocationModal} bind:dialog={locationDialog} />

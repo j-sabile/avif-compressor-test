@@ -2,7 +2,7 @@ import { API } from "../constants";
 
 const autoChangeMakeModelAllImages = async (images) => {
   const res = await fetch(`${API}/make-model-presets`);
-  const presets = (await res.json()).presets;
+  const presets = (await res.json())["presets-map"];
   console.log(presets);
 
   const modifiedImages = images.map((image) => {

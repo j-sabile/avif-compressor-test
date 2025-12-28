@@ -1,5 +1,5 @@
 {
-  "presets": [
+  "presets-map": [
     {
       "from": { "make": "Xiaomi", "model": "23106RN0DA" },
       "to": { "make": "Xiaomi", "model": "Redmi 13C (Neil)" }
@@ -8,5 +8,9 @@
       "from": { "make": "Xiaomi", "model": "M2101K7BG" },
       "to": { "make": "Xiaomi", "model": "Redmi Note 10S" }
     }
+  ],
+  "presets": [
+    { "make": "Xiaomi", "model": "Redmi 13C (Neil)" },
+    { "make": "Xiaomi", "model": "Redmi Note 10S" }
   ]
 }
