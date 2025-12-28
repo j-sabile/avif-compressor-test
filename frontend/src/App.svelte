@@ -16,6 +16,7 @@
   let canDownload = false;
   let showModal = false;
   let isInChangeEXIF = false;
+  let isGettingEXIF = false;
   let brand = "";
   let model = "";
 
@@ -59,9 +60,11 @@
   const handleDragOver = (e) => e.preventDefault();
   const handleDrop = async (e) => {
     e.preventDefault();
+    isGettingEXIF = true;
     const fileList = Array.from(e.dataTransfer.files) as IImage[];
     imagesStore.addImages(fileList);
     await imagesStore.generateExif();
+    isGettingEXIF = false;
   };
 
   const handleDownload = async () => {
@@ -140,7 +143,8 @@
 
   const handleAutoChangeMakeModel = async () => {
     await imagesStore.autoChangeMakeModel();
-  }
+    alert("Make/Model updated!");
+  };
 </script>
 
 {#if isSingleCompress || isInChangeEXIF}
@@ -194,6 +198,9 @@
             {/each}
           </ul>
         </div>
+        {#if isGettingEXIF}
+          <p class="italic font-thin text-center my-2">Generating EXIF data...</p>
+        {/if}
         <button
           class={`bg-neutral-900 rounded-lg shadow px-5 py-2 ${images.length === 0 || isCompressing ? "brightness-75" : "hover:brightness-90"}`}
           on:click={handleSortClick}
