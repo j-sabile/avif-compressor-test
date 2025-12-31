@@ -25,8 +25,9 @@ const processImages = async (req, res) => {
           const { newSize, dest } = await compress(img, exifs[ind].name, effort, quality, resolution);
           await exif(dest, exifs[ind]);
           return { originalSize: img.size, newSize };
-        } catch {
-          return { originalSize: 0, newSize: 0};
+        } catch (error) {
+          console.log(`Error: ${error}`);
+          return { originalSize: 0, newSize: 0 };
         }
       } else {
         const dest = path.join("..", "Edited EXIFs", img.originalname);

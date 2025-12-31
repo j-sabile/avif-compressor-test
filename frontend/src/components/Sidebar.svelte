@@ -14,12 +14,13 @@
   import DebugButton from "./DebugButton.svelte";
 
   import { currImg, images } from "../stores/images";
+  import presets from "../data/presets";
   import { API } from "../constants";
   import type { IImage } from "../interfaces/IImage";
   import MySpinner from "./MySpinner.svelte";
   import { onMount } from "svelte";
 
-  let presets;
+  let makeModelPresets;
 
   const keyboardListner = async (event) => {
     if (!event.ctrlKey || !(event.key === "Enter")) return
@@ -38,7 +39,7 @@
   onMount(async () => {
     try {
       const res = await fetch(`${API}/make-model-presets`);
-      presets = (await res.json()).presets;
+      makeModelPresets = (await res.json()).presets;
     } catch (e) {
       alert(`Error: ${e}`);
     }
@@ -253,7 +254,7 @@
   <DateModal bind:show={showDateModal} bind:dialog={dateDialog} />
 </Modal>
 <Modal bind:show={showCameraModal} bind:dialog={cameraDialog}>
-  <CameraModal bind:show={showCameraModal} bind:dialog={cameraDialog} presets={presets}/>
+  <CameraModal bind:show={showCameraModal} bind:dialog={cameraDialog} presets={makeModelPresets}/>
 </Modal>
 <Modal bind:show={showLocationModal} bind:dialog={locationDialog}>
   <LocationModal bind:show={showLocationModal} bind:dialog={locationDialog} />
