@@ -1,43 +1,31 @@
 import sharp from "sharp";
-import fs from "fs";
 import { exec } from "child_process";
-import exif from "../services/exif.js";
-import compressLibAvif from "../services/compressLibAvif.js";
+import { exif, copyEssentialEXIF } from "../services/exif.js";
 import compress from "../services/compress.js";
-import path from "path";
 
 // CURRENT
 const processImages = async (req, res) => {
-  const images = req.files;
+  const { image, metadataImage } = req.files;
+
   const quality = parseInt(req.body.quality);
   const effort = parseInt(req.body.effort);
   const resolution = parseInt(req.body.resolution);
-  const newFileName = req.body.newFileName;
-  const exifData = req.body.exif ? JSON.parse(req.body.exif) : null;
   const exifs = req.body.exifs ? JSON.parse(req.body.exifs) : null;
-  const toCompress = req.body?.compress === "true";
-  // console.log(effort, quality, resolution, images);
 
-  const results = await Promise.all(
-    images.map(async (img, ind) => {
-      if (toCompress) {
-        try {
-          const { newSize, dest } = await compress(img, exifs[ind].name, effort, quality, resolution);
-          await exif(dest, exifs[ind]);
-          return { originalSize: img.size, newSize };
-        } catch (error) {
-          console.log(`Error: ${error}`);
-          return { originalSize: 0, newSize: 0 };
-        }
-      } else {
-        const dest = path.join("..", "Edited EXIFs", img.originalname);
-        await fs.promises.writeFile(dest, img.buffer);
-        await exif(dest, exifs[ind]);
-        return { originalSize: img.size, newSize: img.size };
-      }
-    })
-  );
-  return res.status(200).json({ message: "Success", results });
+  try {
+    if (metadataImage) {
+      await copyEssentialEXIF(metadataImage[0].path, image[0].path, { orientation: false, thumbnail: false });
+      console.log("Copied EXIF from main image to the edited image.");
+    }
+    const { newSize, dest } = await compress(image[0], exifs[0].name, effort, quality, resolution);
+    await exif(dest, exifs[0]);
+
+    console.log(`${(newSize / 1000000).toFixed(2)}MB - ${exifs[0].name || image[0].originalname} compressed.`);
+    return res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.log(`Error: ${error}`);
+    return res.status(500).json({ message: "Error" });
+  }
 };
 
 // OLD, NOT BEING USED

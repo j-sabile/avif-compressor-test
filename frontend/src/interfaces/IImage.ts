@@ -26,4 +26,5 @@ export interface IImage extends File {
   lng?: string;
   newLat?: string;
   newLng?: string;
+  metadata?: IImage;
 }

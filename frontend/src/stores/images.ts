@@ -45,6 +45,10 @@ function createStore() {
         img.newName = img.currName;
         if (ALLOWED_FORMATS.includes(img.extension)) temp.push(img);
       });
+      images.forEach((img) => {
+        if (/~\d$/.test(img.currName)) {
+          img.metadata = temp.find((i) => i.currName === img.currName.replace(/~\d$/, ""));
+}      });
       update((state) => ({ ...state, images: [...state.images, ...temp] }));
     },
     autoChangeMakeModel: async () => {
@@ -126,7 +130,7 @@ function createStore() {
     generateExif: async () => {
       const formData = new FormData();
       let tempImages = get(images).images;
-      tempImages.forEach((img) => formData.append("img", img));
+      tempImages.forEach((img) => formData.append("exif", img));
       const res = await fetch(`${API}/exif`, { method: "POST", body: formData });
       const data = await res.json();
       update((state) => {

@@ -1,5 +1,6 @@
 import { promisify } from "util";
 import { exec as execCallback } from "child_process";
+import { spawn } from "child_process";
 
 const exec = promisify(execCallback);
 
@@ -21,13 +22,46 @@ const exif = async (source, exif) => {
 
   command += ` -ThumbnailImage= -ImageDescription= -m -overwrite_original`;
   // console.log(command);
-  
+
   try {
     const { stdout } = await exec(command);
-    if (stdout) console.log(stdout.trim());
+    // if (stdout) console.log(stdout.trim());
   } catch (error) {
     console.error("Error executing exif command:", error);
   }
 };
 
-export default exif;
+/**
+ * Copies essential EXIF metadata from source to target.
+ * @param {string} sourcePath - Path to the original file.
+ * @param {string} targetPath - Path to the file receiving the metadata.
+ * @param {object} options - Toggle metadata (orientation, thumbnail).
+ */
+const copyEssentialEXIF = (sourcePath, targetPath, { orientation = true, thumbnail = true } = {}) => {
+  const args = ["-TagsFromFile", sourcePath, "-all:all"];
+
+  // Disable tags conditionally
+  if (!orientation) args.push("--Orientation");
+  if (!thumbnail) args.push("--ThumbnailImage");
+
+  args.push(targetPath, "-overwrite_original");
+
+  return new Promise((resolve, reject) => {
+    const exifProcess = spawn("../ex.exe", args);
+
+    let errorData = "";
+    exifProcess.stderr.on("data", (data) => {
+      errorData += data.toString();
+    });
+
+    exifProcess.on("close", (code) => {
+      if (code === 0) {
+        resolve({ success: true, message: "Metadata copied successfully." });
+      } else {
+        reject(new Error(`ExifTool failed with code ${code}: ${errorData}`));
+      }
+    });
+  });
+};
+
+export { exif, copyEssentialEXIF };

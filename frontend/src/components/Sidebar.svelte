@@ -80,7 +80,7 @@
 
   const handleCompress = async (paramRes?: string, paramQual?: string, paramEffort?: string) => {
     let image = $currImg as IImageJSON;
-
+    
     const exifs = [];
     exifs.push({
       name: image.newName,
@@ -101,7 +101,8 @@
     if (paramRes) formData.append("resolution", paramRes);
     if (paramQual) formData.append("quality", paramQual);
     if (paramEffort) formData.append("effort", paramEffort);
-    formData.append("img", image);
+    if (image.metadata) formData.append("metadataImage", image.metadata);
+    formData.append("image", image);
     formData.append("exifs", JSON.stringify(exifs));
     formData.append("compress", showEditImageOptions.toString());
 
